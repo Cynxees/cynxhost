@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/redis/go-redis/v9"
 	payload "mchost-spot-instance/server/queue/payload"
+	ipPb "mchost-spot-instance/server/lib/stubs/mchost-ip"
 )
 
 func StartSpotInstanceWorker(server *api.Server) {
@@ -59,8 +60,8 @@ func StartSpotInstanceWorker(server *api.Server) {
 
 				// If instances are found, update the database
 				if len(fleetInstances.ActiveInstances) > 0 {
-					instanceID := fleetInstances.ActiveInstances[0].InstanceId
-					template.InstanceId = instanceID
+					instanceId := fleetInstances.ActiveInstances[0].InstanceId
+					template.InstanceId = instanceId
 					template.Status = "ACTIVE"
 
 					if err := server.Db.Save(&template).Error; err != nil {
@@ -73,11 +74,16 @@ func StartSpotInstanceWorker(server *api.Server) {
 					server.Logger.Info("Spot instance provisioned:", string(instanceDetails))
 
 					if payload.EipAllocationId != nil {
-						assignElasticIP(ctx, server, *instanceID, *payload.EipAllocationId);
+						assignElasticIP(ctx, server, &assignIpData{
+							InstanceId: *instanceId,
+							EipAllocationId: *payload.EipAllocationId,
+							IpId: template.IpId,
+						});
 					}
 
 					// Remove the processed task from the queue
-					server.Redis.ZRem(ctx, "spot_instance_queue", payload.FleetRequestId)
+					server.Logger.Info("Removing task from queue:", payloadStr)
+					server.Redis.ZRem(ctx, "spot_instance_queue", payloadStr)
 				}
 			}
 
@@ -87,21 +93,36 @@ func StartSpotInstanceWorker(server *api.Server) {
 	}()
 }
 
-func assignElasticIP(ctx context.Context, server *api.Server, instanceId string, eipAllocationId string) error {
+type assignIpData struct {
+	InstanceId     string
+	EipAllocationId string
+	IpId					 uint64
+}
 
+func assignElasticIP(
+	ctx context.Context, 
+	s *api.Server,
+	data *assignIpData,	
+	) error {	
 	// eipAllocationID := "eipalloc-0d3131e17bfd77974"
 
 	// Associate the Elastic IP with the instance
-	_, err := server.AWSManager.EC2Client.AssociateAddress(ctx, &ec2.AssociateAddressInput{
-		InstanceId:   aws.String(instanceId),
-		AllocationId: aws.String(eipAllocationId),
+	_, err := s.AWSManager.EC2Client.AssociateAddress(ctx, &ec2.AssociateAddressInput{
+		InstanceId:   aws.String(data.InstanceId),
+		AllocationId: aws.String(data.EipAllocationId),
 		AllowReassociation: aws.Bool(true),
+	})
+
+	microIpClient := *s.IpServiceClient
+	microIpClient.UseIp(ctx, &ipPb.UseIpRequest{
+		IpId: int64(data.IpId),
+		InstanceId: data.InstanceId,
 	})
 
 	if err != nil {
 		return fmt.Errorf("failed to associate Elastic IP: %w", err)
 	}
 
-	server.Logger.Info("Elastic IP associated with instance:", instanceId)
+	s.Logger.Info("Elastic IP associated with instance:", data.InstanceId)
 	return nil
 }

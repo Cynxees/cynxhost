@@ -89,6 +89,9 @@ func (s *Server) LaunchSpotFleet(ctx context.Context, request *pb.LaunchTemplate
 
   s.Logger.Info(template)
 
+  // Basicly user ubuntu with password "ubuntu:password" and run the following script
+  base64UserData := "IyEvYmluL2Jhc2gKZWNobyAidWJ1bnR1OnBhc3N3b3JkIiB8IHN1ZG8gY2hwYXNzd2QKc2VkIC1pICJzL15QYXNzd29yZEF1dGhlbnRpY2F0aW9uIG5vL1Bhc3N3b3JkQXV0aGVudGljYXRpb24geWVzLyIgL2V0Yy9zc2gvc3NoZF9jb25maWcKc3lzdGVtY3RsIHJlc3RhcnQgc3NoZAo="
+
 	spotRequestInput := &ec2.RequestSpotFleetInput{
 		SpotFleetRequestConfig: &types.SpotFleetRequestConfigData{
 
@@ -121,6 +124,7 @@ func (s *Server) LaunchSpotFleet(ctx context.Context, request *pb.LaunchTemplate
 					IamInstanceProfile: &types.IamInstanceProfileSpecification{
 						Arn: aws.String("arn:aws:iam::071412439153:instance-profile/EC2-S3-FullAccess"),
 					},
+          UserData: aws.String(base64UserData),
 				},
 			},
 		},
@@ -144,14 +148,17 @@ func (s *Server) LaunchSpotFleet(ctx context.Context, request *pb.LaunchTemplate
 
 	microIpClient := *s.IpServiceClient
 
-	eipAllocationResp, err := microIpClient.ReserveIp(ctx, &microIp.ReserveIpRequest{IpId: int64(template.IpId)})
+	ipResp, err := microIpClient.GetIp(ctx, &microIp.GetIpRequest{
+	  IpId: int64(template.IpId),
+  })
+
 	if err != nil {
 		return nil, err
 	}
 
 	payload := payload.OnProvisionInstancePayload{
 		FleetRequestId:  *fleetRequest.SpotFleetRequestId,
-		EipAllocationId: &eipAllocationResp.EipAllocationId,
+		EipAllocationId: &ipResp.Ip.AllocationId,
 	}
 	
 	payloadJSON, err := json.Marshal(payload)
@@ -279,6 +286,12 @@ func (s *Server) StopTemplate (ctx context.Context, request *pb.StopTemplateRequ
     }).Error; err != nil {
     return nil, err
   }
+
+  microIpClient := *s.IpServiceClient
+
+  microIpClient.UnuseIp(ctx, &microIp.UnuseIpRequest{
+    IpId: int64(template.IpId),
+  })
   
   return &pb.StopTemplateResponse{
     Error: false,
@@ -336,7 +349,7 @@ func (s *Server) connectSSH(host string) (*ssh.Client, error) {
 	config := &ssh.ClientConfig{
 		User: "ubuntu",
 		Auth: []ssh.AuthMethod{
-			ssh.Password("pass"),
+			ssh.Password("password"),
 		},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		Timeout:         5 * time.Second,
