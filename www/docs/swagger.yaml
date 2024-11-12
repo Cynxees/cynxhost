@@ -1,6 +1,8 @@
 definitions:
   pb.CreateTemplateRequest:
     properties:
+      ipId:
+        type: integer
       name:
         type: string
     type: object
@@ -43,7 +45,7 @@ paths:
       summary: Create Spot Fleet Template
       tags:
       - Spot
-  /get-instance:
+  /get:
     post:
       consumes:
       - application/json

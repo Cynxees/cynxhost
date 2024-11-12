@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"mchost-spot-instance/server/api"
 	awsManager "mchost-spot-instance/server/aws"
-	queue "mchost-spot-instance/server/queue"
 	"mchost-spot-instance/server/config"
 	controller "mchost-spot-instance/server/controller"
 	jwtManager "mchost-spot-instance/server/jwt"
+	queue "mchost-spot-instance/server/queue"
+	ipPb "mchost-spot-instance/server/lib/stubs/mchost-ip"
 
 	// "mchost-spot-instance/server/lib/rabbitmq"
 	"mchost-spot-instance/server/models"
@@ -34,7 +35,7 @@ func main() {
 
 	docs.SwaggerInfo.Title = "Spot Instance API"
 	docs.SwaggerInfo.Version = "1.0"
-	docs.SwaggerInfo.Host = fmt.Sprintf("%s:%s", appConfig.CurrentAddress, appConfig.AppPort)
+	docs.SwaggerInfo.Host = fmt.Sprintf("%s:%s", appConfig.App.Address, appConfig.App.Port)
 	docs.SwaggerInfo.BasePath = "/api"
 
 	esLogger := logrus.New()
@@ -52,7 +53,7 @@ func main() {
 	// }
 	// esLogger.AddHook(hook)
 
-	dsn := "user:password@tcp(127.0.0.1:" + appConfig.DbPort + ")/mchost_spot_instance?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "user:password@tcp(127.0.0.1:" + appConfig.Db.Port + ")/mchost_spot_instance?charset=utf8mb4&parseTime=True&loc=Local"
 
 	esLogger.Info(dsn)
 
@@ -63,7 +64,7 @@ func main() {
 
 	db.AutoMigrate(&models.SpotInstanceTemplate{})
 
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", appConfig.MicroservicePort))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", appConfig.App.MicroservicePort))
 	if err != nil {
 		esLogger.Fatalf("failed to listen: %v", err)
 	}
@@ -73,14 +74,23 @@ func main() {
 	// // Start the RabbitMQ consumer in a goroutine
 	// go rabbitmq.StartConsumer("orders")
 
+	ipServiceConn, err := grpc.Dial(appConfig.Microservice.Ip.Host+":"+appConfig.Microservice.Ip.Port, grpc.WithInsecure())
+	if err != nil {
+		esLogger.Fatalf("failed to connect to auth service: %v", err)
+	}
+	defer ipServiceConn.Close()
+
+	ipServiceClient := ipPb.NewIpServiceClient(ipServiceConn)
+
 	grpcServer := grpc.NewServer()
 	server := &api.Server{
-		Db:         db,
-		Logger:     esLogger,
-		JWTManager: jwtManager.NewJWTManager(appConfig.AppKey, 3600, esLogger),
-		AppConfig:  appConfig,
-		AWSManager: awsManager.NewAWSManager(appConfig.AwsAccessKeyId, appConfig.AwsAccessKeySecret),
-		Redis: queue.NewRedisClient(),
+		Db:              db,
+		Logger:          esLogger,
+		JWTManager:      jwtManager.NewJWTManager(appConfig.App.Key, 3600, esLogger),
+		AppConfig:       appConfig,
+		AWSManager:      awsManager.NewAWSManager(appConfig.Aws.AccessKeyId, appConfig.Aws.AccessKeySecret),
+		Redis:           queue.NewRedisClient(),
+		IpServiceClient: &ipServiceClient,
 	}
 
 	queue.StartSpotInstanceWorker(server)
@@ -89,7 +99,7 @@ func main() {
 
 	controller.SetupHandlers(router, server)
 
-	go router.Run(fmt.Sprintf(":%s", appConfig.AppPort))
+	go router.Run(fmt.Sprintf(":%s", appConfig.App.Port))
 	pb.RegisterSpotServiceServer(grpcServer, server)
 
 	if err := grpcServer.Serve(lis); err != nil {

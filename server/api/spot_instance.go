@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -15,8 +16,10 @@ import (
 	"github.com/redis/go-redis/v9"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	microIp "mchost-spot-instance/server/lib/stubs/mchost-ip"
 	models "mchost-spot-instance/server/models"
 	pb "mchost-spot-instance/server/pb"
+	payload "mchost-spot-instance/server/queue/payload"
 )
 
 func (s *Server) CreateTemplate(ctx context.Context, request *pb.CreateTemplateRequest) (*pb.GetTemplateResponse, error) {
@@ -29,12 +32,27 @@ func (s *Server) CreateTemplate(ctx context.Context, request *pb.CreateTemplateR
 		Name: request.Name,
 		Status: "PENDING",
 		InstanceType: "t2.TODO",
+		IpId: request.IpId,
+		Region: "ap-southeast-3",
 	}
 
 	if err := s.Db.Create(spotInstanceTemplate).Error; err != nil {
 		return nil, err
 	}
+
+	microIpClient := *s.IpServiceClient
+
+	s.Logger.Info("Reserving IP: ")
+	_, err := microIpClient.ReserveIp(ctx, &microIp.ReserveIpRequest{
+		IpId: int64(request.IpId),
+		SpotInstanceTemplateId: uint64(spotInstanceTemplate.Id),
+	})
+
+	if err != nil {
+		return nil, err
+	}
 	
+	s.Logger.Info("Ip Reserved")
 	return &pb.GetTemplateResponse{
 		Error: false,
 		Code: http.StatusOK,
@@ -47,6 +65,9 @@ func (s *Server) CreateTemplate(ctx context.Context, request *pb.CreateTemplateR
 			InstanceType: spotInstanceTemplate.InstanceType,
 			CreatedAt: timestamppb.New(spotInstanceTemplate.CreatedAt),
 			UpdatedAt: timestamppb.New(spotInstanceTemplate.UpdatedAt),
+			AmiId: spotInstanceTemplate.AmiId,
+			IpId: uint64(spotInstanceTemplate.IpId),
+			Region: spotInstanceTemplate.Region,
 		},
 	}, nil
 }
@@ -121,10 +142,28 @@ func (s *Server) LaunchSpotFleet(ctx context.Context, request *pb.LaunchTemplate
 
 	s.Logger.Info(fleetRequest)
 
+	microIpClient := *s.IpServiceClient
+
+	eipAllocationResp, err := microIpClient.ReserveIp(ctx, &microIp.ReserveIpRequest{IpId: int64(template.IpId)})
+	if err != nil {
+		return nil, err
+	}
+
+	payload := payload.OnProvisionInstancePayload{
+		FleetRequestId:  *fleetRequest.SpotFleetRequestId,
+		EipAllocationId: &eipAllocationResp.EipAllocationId,
+	}
+	
+	payloadJSON, err := json.Marshal(payload)
+	if err != nil {
+		s.Logger.Error("Failed to marshal payload:", err)
+		return nil, err
+	}
+
 	delay := time.Now().Add(20 * time.Second).Unix()
 	err = s.Redis.ZAdd(ctx, "spot_instance_queue", redis.Z{
 		Score: float64(delay),
-		Member: fleetRequest.SpotFleetRequestId,
+		Member: payloadJSON,
 	}).Err()
 	if err != nil {
 		return nil, errors.New("failed to push to queue");
@@ -133,7 +172,7 @@ func (s *Server) LaunchSpotFleet(ctx context.Context, request *pb.LaunchTemplate
 	return fleetRequest, nil
 }
 
-func (s *Server) GetTemplate (ctx context.Context, request *pb.GetTemplateRequest) (*pb.GetTemplateResponse, error) {
+func (s *Server) GetTemplate(ctx context.Context, request *pb.GetTemplateRequest) (*pb.GetTemplateResponse, error) {
   
   template := &models.SpotInstanceTemplate{}
   if err := s.Db.Where("id = ?", request.SpotInstanceTemplateId).First(template).Error; err != nil {
@@ -196,6 +235,8 @@ func (s *Server) GetTemplate (ctx context.Context, request *pb.GetTemplateReques
       CreatedAt: timestamppb.New(template.CreatedAt),
       UpdatedAt: timestamppb.New(template.UpdatedAt),
       AmiId: template.AmiId,
+			Region: template.Region,
+			IpId: uint64(template.IpId),
     },
   }, nil
 }
@@ -229,7 +270,7 @@ func (s *Server) StopTemplate (ctx context.Context, request *pb.StopTemplateRequ
     return nil, err
   }
 
-  if err := s.Db.Model(&models.SpotInstanceTemplate{}).
+	if err := s.Db.Model(&models.SpotInstanceTemplate{}).
     Where("id = ?", request.SpotInstanceTemplateId).
     UpdateColumns(map[string] interface{}{
       "fleet_request_id": nil,

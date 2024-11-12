@@ -48,7 +48,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/get-instance": {
+        "/get": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -175,6 +175,9 @@ const docTemplate = `{
         "pb.CreateTemplateRequest": {
             "type": "object",
             "properties": {
+                "ipId": {
+                    "type": "integer"
+                },
                 "name": {
                     "type": "string"
                 }

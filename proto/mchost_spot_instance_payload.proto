@@ -15,6 +15,7 @@ message DefaultResponse {
 
 message CreateTemplateRequest {
   string name = 1;
+  uint64 ipId = 2;
 }
 
 message GetTemplateRequest {

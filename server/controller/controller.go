@@ -26,7 +26,7 @@ func SetupHandlers(router *gin.Engine, server *api.Server) {
 		launchSpotFleetHandler(c, server)
 	})
 
-	router.POST("/api/get-instance", func(c *gin.Context) {
+	router.POST("/api/get", func(c *gin.Context) {
 		getSpotFleetHandler(c, server)
 	})
 
@@ -157,7 +157,7 @@ func stopSpotFleetHandler(c *gin.Context, server *api.Server) {
 // @Produce json
 // @Param			requestBody	body		pb.GetTemplateRequest	true	"Request Body"
 // @Success 200 {string} Helloworld
-// @Router /get-instance [post]
+// @Router /get [post]
 func getSpotFleetHandler(c *gin.Context, server *api.Server) {
 	ctx := context.Background()
 

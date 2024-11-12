@@ -18,6 +18,8 @@ type SpotInstanceTemplate struct {
 	InstanceType string
 
 	AmiId string
+	IpId uint64
+	Region string
 
 	CreatedAt time.Time `gorm:"autoCreateTime"`
 	UpdatedAt time.Time `gorm:"autoUpdateTime"`

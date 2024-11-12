@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/redis/go-redis/v9"
+	payload "mchost-spot-instance/server/queue/payload"
 )
 
 func StartSpotInstanceWorker(server *api.Server) {
@@ -21,7 +22,7 @@ func StartSpotInstanceWorker(server *api.Server) {
 			now := time.Now().Unix()
 
 			// Fetch tasks that are due for processing
-			fleetRequestIds, err := server.Redis.ZRangeByScore(ctx, "spot_instance_queue", &redis.ZRangeBy{
+			onProvisionInstancePayloads, err := server.Redis.ZRangeByScore(ctx, "spot_instance_queue", &redis.ZRangeBy{
 				Min: "-inf",
 				Max: fmt.Sprintf("%d", now),
 				Offset: 0,
@@ -33,17 +34,23 @@ func StartSpotInstanceWorker(server *api.Server) {
 				continue
 			}
 
-			for _, fleetRequestId := range fleetRequestIds {
+			for _, payloadStr := range onProvisionInstancePayloads {
 				// Fetch template by FleetRequestId
+				var payload payload.OnProvisionInstancePayload
+				if err := json.Unmarshal([]byte(payloadStr), &payload); err != nil {
+					server.Logger.Error("Failed to parse payload:", err)
+					continue
+				}
+
 				var template models.SpotInstanceTemplate
-				if err := server.Db.Where("fleet_request_id = ?", fleetRequestId).First(&template).Error; err != nil {
+				if err := server.Db.Where("fleet_request_id = ?", payload.FleetRequestId).First(&template).Error; err != nil {
 					server.Logger.Error("Failed to find template:", err)
 					continue
 				}
 
 				// Check if the Spot Fleet request has been fulfilled
 				fleetInstances, err := server.AWSManager.EC2Client.DescribeSpotFleetInstances(ctx, &ec2.DescribeSpotFleetInstancesInput{
-					SpotFleetRequestId: &fleetRequestId,
+					SpotFleetRequestId: &payload.FleetRequestId,
 				})
 				if err != nil {
 					server.Logger.Error("Failed to describe Spot Fleet instances:", err)
@@ -65,10 +72,12 @@ func StartSpotInstanceWorker(server *api.Server) {
 					instanceDetails, _ := json.Marshal(fleetInstances)
 					server.Logger.Info("Spot instance provisioned:", string(instanceDetails))
 
-					assignElasticIP(ctx, server, *instanceID);
+					if payload.EipAllocationId != nil {
+						assignElasticIP(ctx, server, *instanceID, *payload.EipAllocationId);
+					}
 
 					// Remove the processed task from the queue
-					server.Redis.ZRem(ctx, "spot_instance_queue", fleetRequestId)
+					server.Redis.ZRem(ctx, "spot_instance_queue", payload.FleetRequestId)
 				}
 			}
 
@@ -78,14 +87,14 @@ func StartSpotInstanceWorker(server *api.Server) {
 	}()
 }
 
-func assignElasticIP(ctx context.Context, server *api.Server, instanceID string) error {
+func assignElasticIP(ctx context.Context, server *api.Server, instanceId string, eipAllocationId string) error {
 
-	eipAllocationID := "eipalloc-0d3131e17bfd77974"
+	// eipAllocationID := "eipalloc-0d3131e17bfd77974"
 
 	// Associate the Elastic IP with the instance
 	_, err := server.AWSManager.EC2Client.AssociateAddress(ctx, &ec2.AssociateAddressInput{
-		InstanceId:   aws.String(instanceID),
-		AllocationId: aws.String(eipAllocationID),
+		InstanceId:   aws.String(instanceId),
+		AllocationId: aws.String(eipAllocationId),
 		AllowReassociation: aws.Bool(true),
 	})
 
@@ -93,6 +102,6 @@ func assignElasticIP(ctx context.Context, server *api.Server, instanceID string)
 		return fmt.Errorf("failed to associate Elastic IP: %w", err)
 	}
 
-	server.Logger.Info("Elastic IP associated with instance:", instanceID)
+	server.Logger.Info("Elastic IP associated with instance:", instanceId)
 	return nil
 }

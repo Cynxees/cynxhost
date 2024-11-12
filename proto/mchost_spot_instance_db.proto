@@ -15,6 +15,7 @@ message SpotInstanceTemplate {
     string instanceType = 7;
     string region = 8;
     string amiId = 9;
-    google.protobuf.Timestamp created_at = 10;
-    google.protobuf.Timestamp updated_at = 11;
+    uint64 ipId = 10;
+    google.protobuf.Timestamp created_at = 11;
+    google.protobuf.Timestamp updated_at = 12;
 }

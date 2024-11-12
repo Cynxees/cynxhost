@@ -4,97 +4,93 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"reflect"
+	"strings"
 
 	"github.com/joho/godotenv"
 )
 
 type Config struct {
-	// Listen address is an array of IP addresses and port combinations.
-	// Listen address is an array so that this service can listen to many interfaces at once.
-	// You can use this value for example: []string{"192.168.1.12:80", "25.49.25.73:80"} to listen to
-	// listen to interfaces with IP address of 192.168.1.12 and 25.49.25.73, both on port 80.
-	ListenAddress string `config:"LISTEN_ADDRESS"`
 
-	CorsAllowedHeaders []string `config:"CORS_ALLOWED_HEADERS"`
-	CorsAllowedMethods []string `config:"CORS_ALLOWED_METHODS"`
-	CorsAllowedOrigins []string `config:"CORS_ALLOWED_ORIGINS"`
+	App struct {
+		Name              string `config:"APP_NAME"`
+		Key               string `config:"APP_KEY"`
+		Address           string `config:"APP_ADDRESS"`
+		Port              string `config:"APP_PORT"`
+		MicroservicePort  string `config:"APP_MICROSERVICE_PORT"`
+	}
 
-	AppName string `config:"APP_NAME"`
-	AppKey  string `config:"APP_KEY"`
+	Db struct {
+		Port     string `config:"DB_PORT"`
+		Host     string `config:"DB_HOST"`
+		Name     string `config:"DB_NAME"`
+		Username string `config:"DB_USERNAME"`
+		Password string `config:"DB_PASSWORD"`
+	}
 
-	AppPort          string `config:"APP_PORT"`
-	MicroservicePort string `config:"MICROSERVICE_PORT"`
+	Aws struct {
+		AccessKeyId     string `config:"AWS_ACCESS_KEY_ID"`
+		AccessKeySecret string `config:"AWS_ACCESS_KEY_SECRET"`
+	}
 
-	DbPort     string `config:"DB_PORT"`
-	DbHost     string `config:"DB_HOST"`
-	DbName     string `config:"DB_NAME"`
-	DbUsername string `config:"DB_USERNAME"`
-	DbPassword string `config:"DB_PASSWORD"`
-
-	AwsAccessKeyId     string `config:"AWS_ACCESS_KEY_ID"`
-	AwsAccessKeySecret string `config:"AWS_ACCESS_KEY_SECRET"`
-
-	CurrentAddress string `config:CURRENT_ADDRESS`
+	Microservice struct {
+		Ip struct {
+			Host string `config:"MICROSERVICE_IP_HOST"`
+			Port    string `config:"MICROSERVICE_IP_PORT"`
+		}
+	}
 }
 
 func InitConfig(path string) *Config {
-	// Todo: add env checker
-
 	if path == "" {
 		godotenv.Load(".env")
 	} else {
 		godotenv.Load(path)
 	}
 
-	appName := getEnv("APP_NAME")
-	appKey := getEnv("APP_KEY")
-	appPort := getEnv("APP_PORT")
-	microservicePort := getEnv("MICROSERVICE_PORT")
-	dbPort := getEnv("DB_PORT")
-	dbHost := getEnv("DB_HOST")
-	dbName := getEnv("DB_NAME")
-	dbUsername := getEnv("DB_USERNAME")
-	dbPassword := getEnv("DB_PASSWORD")
-	awsAccessKeyId := getEnv("AWS_ACCESS_KEY_ID")
-	awsAccessKeySecret := getEnv("AWS_ACCESS_KEY_SECRET")
-	currentAddress := getEnv("CURRENT_ADDRESS")
+	config := &Config{}
+	populateConfig(config)
 
-	return &Config{
-		ListenAddress: fmt.Sprintf("%s:%s", os.Getenv("HOST"), os.Getenv("PORT")),
-		CorsAllowedHeaders: []string{
-			"Connection", "User-Agent", "Referer",
-			"Accept", "Accept-Language", "Content-Type",
-			"Content-Language", "Content-Disposition", "Origin",
-			"Content-Length", "Authorization", "ResponseType",
-			"X-Requested-With", "X-Forwarded-For",
-		},
-		CorsAllowedMethods: []string{"GET", "POST", "PATCH", "DELETE", "PUT"},
-		CorsAllowedOrigins: []string{"*"},
-		AppName:            appName,
-		AppKey:             appKey,
-		AppPort:            appPort,
-		MicroservicePort:   microservicePort,
-		DbPort:             dbPort,
-		DbHost:             dbHost,
-		DbName:             dbName,
-		DbUsername:         dbUsername,
-		DbPassword:         dbPassword,
-		AwsAccessKeyId:     awsAccessKeyId,
-		AwsAccessKeySecret: awsAccessKeySecret,
-		CurrentAddress: currentAddress,
+	fmt.Println(config)
+	return config
+}
+
+func populateConfig(config interface{}) {
+	v := reflect.ValueOf(config).Elem()
+	t := v.Type()
+
+	for i := 0; i < v.NumField(); i++ {
+		field := v.Field(i)
+		fieldType := t.Field(i)
+		tag := fieldType.Tag.Get("config")
+
+		// If the field is a nested struct, recurse
+		if field.Kind() == reflect.Struct {
+			populateConfig(field.Addr().Interface())
+			continue
+		}
+
+		if tag == "" {
+			panic("config tag missing for field: " + fieldType.Name)
+		}
+
+		// Fetch the environment variable based on the tag
+		envValue, exists := os.LookupEnv(tag)
+		if !exists {
+			panic("environment variable not found: " + tag)
+		}
+		
+		// Handle string slices for comma-separated values
+		if field.Kind() == reflect.Slice && field.Type().Elem().Kind() == reflect.String {
+			field.Set(reflect.ValueOf(strings.Split(envValue, ",")))
+		} else if field.Kind() == reflect.String {
+			field.SetString(envValue)
+		}
+	
 	}
 }
 
 func (c *Config) AsString() string {
-	data, _ := json.Marshal(c)
+	data, _ := json.MarshalIndent(c, "", "  ")
 	return string(data)
-}
-
-func getEnv(key string) string {
-	if value, ok := os.LookupEnv(key); ok {
-		return value
-	}
-
-	panic(fmt.Sprintf("Environment variable %s is not set", key))
-
 }
