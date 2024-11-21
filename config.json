@@ -1,0 +1,66 @@
+{
+  "app": {
+    "address": "127.0.0.1",
+    "port": 3000,
+    "name": "MCHOST", 
+    "debug": true,
+    "key": "andrewisacutiepatootie"
+  },
+  "router": {
+    "default": "api/v1"
+  },
+  "database": {
+    "mysql": {
+      "host": "127.0.0.1",
+      "port": 3306,
+      "database": "mchost",
+      "username": "user",
+      "password": "password",
+      "dialect": "mysql",
+      "pool": {
+        "max": 5,
+        "min": 0,
+        "acquire": 30000,
+        "idle": 10000
+      }
+    },
+    "redis": {
+      "host": "localhost", 
+      "port": 6379,
+      "password": ""
+    },
+    "elasticsearch": {
+      "host": "localhost",
+      "port": 9200,
+      "log": "trace"
+    },
+    "rabbitmq": {
+      "host": "localhost",
+      "port": 5672,
+      "username": "guest", 
+      "password": "guest"
+    }
+  },
+  "logging": {
+    "level": "info",
+    "format": "json",
+    "destinations": [
+      "console",
+      "elasticsearch"
+    ]
+  },
+  "security": {
+    "jwt": {
+      "secret": "your-secret-key",
+      "expiresIn": "1h"
+    },
+    "cors": {
+      "enabled": true,
+      "origin": "*"
+    }
+  },
+  "aws": {
+    "accessKeyId": "AKIARBIEDLBYV72UB374",
+    "accessKeySecret": "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"
+  }
+}
