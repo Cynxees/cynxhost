@@ -17,26 +17,43 @@ func New(DB *sql.DB) database.TblUser {
 	}
 }
 
-func (database *TblUserImpl) InsertUser(ctx context.Context, user entity.TblUser) (context.Context, entity.TblUser, error) {
+func (database *TblUserImpl) InsertUser(ctx context.Context, user entity.TblUser) (context.Context, int, error) {
 	SQL := `
     INSERT INTO tbl_user (username, password)
     VALUES (?, ?)
   `
 
-	row := database.DB.QueryRowContext(ctx, SQL, user.Username, user.Password)
-	paramData := entity.TblUser{}
-	err := row.Scan(
-		&paramData.Id,
-		&paramData.Username,
-		&paramData.Password,
-		&paramData.CreatedDate,
-		&paramData.ModifiedDate,
-	)
+	result, err := database.DB.ExecContext(ctx, SQL, user.Username, user.Password)
 	if err != nil {
-		return ctx, paramData, err
+		return ctx, 0, err
 	}
 
-	return ctx, paramData, nil
+	id, err := result.LastInsertId()
+	if err != nil {
+		return ctx, 0, err
+	}
+
+	return ctx, int(id), nil
+}
+
+func (database *TblUserImpl) CheckUserExists(ctx context.Context, key string, value string) (context.Context, bool, error) {
+	SQL := `
+		SELECT id
+		FROM tbl_user
+		WHERE ` + key + ` = ?
+	`
+
+	row := database.DB.QueryRowContext(ctx, SQL, value)
+	var id int
+	err := row.Scan(&id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return ctx, false, nil
+		}
+		return ctx, false, err
+	}
+
+	return ctx, true, nil
 }
 
 func (database *TblUserImpl) GetUser(ctx context.Context, key string, value string) (context.Context, entity.TblUser, error) {

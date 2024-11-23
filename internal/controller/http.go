@@ -2,9 +2,10 @@ package controller
 
 import (
 	"cynxhost/internal/app"
-	"cynxhost/internal/controller/loginusercontroller"
-	"cynxhost/internal/controller/paginateusercontroller"
-	"cynxhost/internal/controller/registerusercontroller"
+	"cynxhost/internal/controller/user/checkusernamecontroller"
+	"cynxhost/internal/controller/user/loginusercontroller"
+	"cynxhost/internal/controller/user/paginateusercontroller"
+	"cynxhost/internal/controller/user/registerusercontroller"
 	"cynxhost/internal/middleware"
 	"errors"
 	"net/http"
@@ -35,8 +36,10 @@ func NewHttpServer(app *app.App) (*HttpServer, error) {
 		r.HandleFunc(routerPath+path, wrappedHandler).Methods("POST")
 	}
 
-	handlePostFunc("/register-user", registerusercontroller.New(app.Usecases.RegisterUserUseCase, app.Dependencies.Validator).RegisterUser, true)
+	handlePostFunc("/register-user", registerusercontroller.New(app.Usecases.RegisterUserUseCase, app.Dependencies.Validator).RegisterUser, false)
 	handlePostFunc("/login-user", loginusercontroller.New(app.Usecases.LoginUserUseCase, app.Dependencies.Validator).LoginUser, false)
+	handlePostFunc("/check-username", checkusernamecontroller.New(app.Usecases.CheckUsernameUseCase, app.Dependencies.Validator).CheckUsername, false)
+
 	handlePostFunc("/paginate-user", paginateusercontroller.New(app.Usecases.PaginateUserUseCase, app.Dependencies.Validator).PaginateUser, true)
 
 	r.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {

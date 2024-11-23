@@ -35,7 +35,7 @@ func (controller *RegisterUserController) RegisterUser(w http.ResponseWriter, r 
 		return apiResponse
 	}
 
-	_, _, err := controller.uc.RegisterUser(r.Context(), entity.TblUser{
+	_, accessToken, err := controller.uc.RegisterUser(r.Context(), entity.TblUser{
 		Username: requestBody.Username,
 		Password: requestBody.Password,
 	})
@@ -46,5 +46,9 @@ func (controller *RegisterUserController) RegisterUser(w http.ResponseWriter, r 
 	}
 
 	apiResponse.Code = responsecode.CodeSuccess
+	apiResponse.Data = map[string]string{
+		"access_token": accessToken,
+		"token_type": "Bearer",
+	}
 	return apiResponse
 }

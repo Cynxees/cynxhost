@@ -14,3 +14,7 @@ type PaginateUserRequest struct {
 	Page int `json:"page" validate:"required"`
 	Size int `json:"size" validate:"required"`
 }
+
+type CheckUsernameRequest struct {
+	Username string `json:"username" validate:"required"`
+}

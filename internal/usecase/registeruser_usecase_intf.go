@@ -6,5 +6,5 @@ import (
 )
 
 type RegisterUserUseCase interface {
-	RegisterUser(ctx context.Context, user entity.TblUser) (context.Context, entity.TblUser, error)
+	RegisterUser(ctx context.Context, user entity.TblUser) (context.Context, string, error)
 }

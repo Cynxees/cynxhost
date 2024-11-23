@@ -2,26 +2,45 @@ package registeruserusecase
 
 import (
 	"context"
+	"cynxhost/internal/dependencies"
 	"cynxhost/internal/model/entity"
 	"cynxhost/internal/repository/database"
 	"cynxhost/internal/usecase"
+	"errors"
 )
 
 type RegisterUserUseCaseImpl struct {
-	tblUser database.TblUser
+	tblUser    database.TblUser
+	jwtManager *dependencies.JWTManager
 }
 
-func New(tblUser database.TblUser) usecase.RegisterUserUseCase {
+func New(tblUser database.TblUser, jwtManager *dependencies.JWTManager) usecase.RegisterUserUseCase {
 	return &RegisterUserUseCaseImpl{
-		tblUser: tblUser,
+		tblUser:    tblUser,
+		jwtManager: jwtManager,
 	}
 }
 
-func (usecase *RegisterUserUseCaseImpl) RegisterUser(ctx context.Context, user entity.TblUser) (context.Context, entity.TblUser, error) {
-	ctx, user, err := usecase.tblUser.InsertUser(ctx, user)
+func (usecase *RegisterUserUseCaseImpl) RegisterUser(ctx context.Context, user entity.TblUser) (context.Context, string, error) {
+
+	ctx, exist, err := usecase.tblUser.CheckUserExists(ctx, "username", user.Username)
 	if err != nil {
-		return ctx, user, err
+		return ctx, "", err
 	}
 
-	return ctx, user, nil
+	if exist {
+		return ctx, "", errors.New("username already exists")
+	}
+
+	ctx, id, err := usecase.tblUser.InsertUser(ctx, user)
+	if err != nil {
+		return ctx, "", err
+	}
+
+	token, err := usecase.jwtManager.GenerateToken(id)
+	if err != nil {
+		return ctx, "", err
+	}
+
+	return ctx, token.AccessToken, nil
 }
