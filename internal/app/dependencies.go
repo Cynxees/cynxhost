@@ -4,6 +4,7 @@ import (
 	"cynxhost/internal/dependencies"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/go-redis/redis"
 	"github.com/sirupsen/logrus"
 )
@@ -12,9 +13,11 @@ type Dependencies struct {
 	Logger *logrus.Logger
 	Config *dependencies.Config
 
+	Validator *validator.Validate
+
 	RedisClient    *redis.Client
 	DatabaseClient *dependencies.DatabaseClient
-	AWSClient *dependencies.AWSClient
+	AWSClient      *dependencies.AWSClient
 
 	JWTManager *dependencies.JWTManager
 }
@@ -27,6 +30,8 @@ func NewDependencies(configPath string) *Dependencies {
 	}
 
 	logger := dependencies.NewLogger(config)
+
+	validator := validator.New()
 
 	logger.Infoln("Connecting to Redis")
 	redis := dependencies.NewRedisClient(config)
@@ -45,11 +50,12 @@ func NewDependencies(configPath string) *Dependencies {
 
 	logger.Infoln("Dependencies initialized")
 	return &Dependencies{
-		Config:      config,
+		Config:         config,
 		DatabaseClient: databaseClient,
-		RedisClient: redis,
-		Logger:      logger,
-		AWSClient:  awsManager,
-		JWTManager:  jwtManager,
+		Validator:      validator,
+		RedisClient:    redis,
+		Logger:         logger,
+		AWSClient:      awsManager,
+		JWTManager:     jwtManager,
 	}
 }

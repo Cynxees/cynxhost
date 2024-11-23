@@ -1,8 +1,9 @@
 package controller
 
 import (
-	"errors"
 	"cynxhost/internal/app"
+	"cynxhost/internal/controller/registerusercontroller"
+	"errors"
 	"net/http"
 	"strconv"
 	"time"
@@ -18,6 +19,11 @@ type HttpServer struct {
 func NewHttpServer(app *app.App) (*HttpServer, error) {
 
 	r := mux.NewRouter()
+
+	registerUserController := registerusercontroller.New(app.Usecases.RegisterUserUseCase, app.Dependencies.Validator)
+
+	routerPath := app.Dependencies.Config.Router.Default
+	r.HandleFunc(routerPath + "/register", registerUserController.RegisterUser).Methods("POST")
 
 	r.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
