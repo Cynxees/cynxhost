@@ -9,16 +9,16 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 )
 
-type AWSManager struct {
+type AWSClient struct {
 	Config    *aws.Config
 	EC2Client *ec2.Client
 }
 
-func NewAWSManager(accessKeyId string, secret string) *AWSManager {
+func NewAWSClient(accessKeyId string, secret string) *AWSClient {
 
 	config := newAWSConfig(accessKeyId, secret)
 
-	return &AWSManager{
+	return &AWSClient{
 		Config:    config,
 		EC2Client: newEC2Client(*config),
 	}

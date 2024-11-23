@@ -5,7 +5,6 @@ import (
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/sirupsen/logrus"
 )
 
 type JWTManager struct {
@@ -29,7 +28,7 @@ func (jw *JWTToken) GetAccessToken() string {
 	return jw.AccessToken
 }
 
-func NewJWTManager(secretKey string, tokenDuration time.Duration, logger *logrus.Logger) *JWTManager {
+func NewJWTManager(secretKey string, tokenDuration time.Duration) *JWTManager {
 	return &JWTManager{secretKey, tokenDuration}
 }
 
