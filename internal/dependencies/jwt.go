@@ -2,6 +2,7 @@ package dependencies
 
 import (
 	"errors"
+	"strconv"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
@@ -32,7 +33,7 @@ func NewJWTManager(secretKey string, tokenDuration time.Duration) *JWTManager {
 	return &JWTManager{secretKey, tokenDuration}
 }
 
-func (manager *JWTManager) GenerateToken(userID string) (*JWTToken, error) {
+func (manager *JWTManager) GenerateToken(userId int) (*JWTToken, error) {
 	var err error
 	now := time.Now()
 
@@ -41,7 +42,7 @@ func (manager *JWTManager) GenerateToken(userID string) (*JWTToken, error) {
 			ExpiresAt: now.Add(manager.tokenDuration).Unix(),
 			IssuedAt:  now.Unix(),
 		},
-		UserId: userID,
+		UserId: strconv.Itoa(userId),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

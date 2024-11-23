@@ -1,8 +1,7 @@
-package registerusercontroller
+package paginateusercontroller
 
 import (
 	"cynxhost/internal/helper"
-	"cynxhost/internal/model/entity"
 	"cynxhost/internal/model/request"
 	"cynxhost/internal/model/response"
 	"cynxhost/internal/model/response/responsecode"
@@ -12,21 +11,21 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-type RegisterUserController struct {
-	uc        usecase.RegisterUserUseCase
+type PaginateUserController struct {
+	uc        usecase.PaginateUserUseCase
 	validator *validator.Validate
 }
 
-func New(registerUserUseCase usecase.RegisterUserUseCase, validate *validator.Validate) *RegisterUserController {
-	return &RegisterUserController{
-		uc:        registerUserUseCase,
+func New(paginateUserUseCase usecase.PaginateUserUseCase, validate *validator.Validate) *PaginateUserController {
+	return &PaginateUserController{
+		uc:        paginateUserUseCase,
 		validator: validate,
 	}
 }
 
-func (controller *RegisterUserController) RegisterUser(w http.ResponseWriter, r *http.Request) response.APIResponse {
+func (controller *PaginateUserController) PaginateUser(w http.ResponseWriter, r *http.Request) response.APIResponse {
 
-	var requestBody request.RegisterUserRequest
+	var requestBody request.PaginateUserRequest
 	var apiResponse response.APIResponse
 
 	if err := helper.DecodeAndValidateRequest(r, &requestBody, controller.validator); err != nil {
@@ -35,16 +34,16 @@ func (controller *RegisterUserController) RegisterUser(w http.ResponseWriter, r 
 		return apiResponse
 	}
 
-	_, _, err := controller.uc.RegisterUser(r.Context(), entity.TblUser{
-		Username: requestBody.Username,
-		Password: requestBody.Password,
-	})
+	_, users, err := controller.uc.PaginateUser(r.Context(), requestBody.Page, requestBody.Size)
 	if err != nil {
-		apiResponse.Code = responsecode.CodeInternalError
+		apiResponse.Code = responsecode.CodeAuthenticationError
 		apiResponse.Error = err.Error()
 		return apiResponse
 	}
 
+	apiResponse.Data = map[string]any{
+		"users": users,
+	}
 	apiResponse.Code = responsecode.CodeSuccess
 	return apiResponse
 }

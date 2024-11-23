@@ -1,8 +1,7 @@
-package registerusercontroller
+package loginusercontroller
 
 import (
 	"cynxhost/internal/helper"
-	"cynxhost/internal/model/entity"
 	"cynxhost/internal/model/request"
 	"cynxhost/internal/model/response"
 	"cynxhost/internal/model/response/responsecode"
@@ -12,21 +11,21 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-type RegisterUserController struct {
-	uc        usecase.RegisterUserUseCase
+type LoginUserController struct {
+	uc        usecase.LoginUserUseCase
 	validator *validator.Validate
 }
 
-func New(registerUserUseCase usecase.RegisterUserUseCase, validate *validator.Validate) *RegisterUserController {
-	return &RegisterUserController{
-		uc:        registerUserUseCase,
+func New(loginUserUseCase usecase.LoginUserUseCase, validate *validator.Validate) *LoginUserController {
+	return &LoginUserController{
+		uc:        loginUserUseCase,
 		validator: validate,
 	}
 }
 
-func (controller *RegisterUserController) RegisterUser(w http.ResponseWriter, r *http.Request) response.APIResponse {
+func (controller *LoginUserController) LoginUser(w http.ResponseWriter, r *http.Request) response.APIResponse {
 
-	var requestBody request.RegisterUserRequest
+	var requestBody request.LoginUserRequest
 	var apiResponse response.APIResponse
 
 	if err := helper.DecodeAndValidateRequest(r, &requestBody, controller.validator); err != nil {
@@ -35,16 +34,17 @@ func (controller *RegisterUserController) RegisterUser(w http.ResponseWriter, r 
 		return apiResponse
 	}
 
-	_, _, err := controller.uc.RegisterUser(r.Context(), entity.TblUser{
-		Username: requestBody.Username,
-		Password: requestBody.Password,
-	})
+	_, accessToken, err := controller.uc.LoginUser(r.Context(), requestBody.Username, requestBody.Password)
 	if err != nil {
-		apiResponse.Code = responsecode.CodeInternalError
+		apiResponse.Code = responsecode.CodeAuthenticationError
 		apiResponse.Error = err.Error()
 		return apiResponse
 	}
 
+	apiResponse.Data = map[string]string{
+		"access_token": accessToken,
+		"token_type":   "Bearer",
+	}
 	apiResponse.Code = responsecode.CodeSuccess
 	return apiResponse
 }

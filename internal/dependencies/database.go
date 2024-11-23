@@ -15,7 +15,7 @@ type DatabaseClient struct {
 
 func NewDatabaseClient(config *Config) (*DatabaseClient, error) {
 
-	dataSourceName := config.Database.MySQL.Username + ":" + config.Database.MySQL.Password + "@tcp(" + config.Database.MySQL.Host + ":" + strconv.Itoa(config.Database.MySQL.Port) + ")/" + config.Database.MySQL.Database
+	dataSourceName := config.Database.MySQL.Username + ":" + config.Database.MySQL.Password + "@tcp(" + config.Database.MySQL.Host + ":" + strconv.Itoa(config.Database.MySQL.Port) + ")/" + config.Database.MySQL.Database + "?parseTime=true"
 
 	db, err := sql.Open("mysql", dataSourceName)
 	if err != nil {

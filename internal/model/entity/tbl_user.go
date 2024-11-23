@@ -3,9 +3,9 @@ package entity
 import "time"
 
 type TblUser struct {
-	Id           int
-	Username     string
-	Password     string
-	CreatedDate  time.Time
-	ModifiedDate time.Time
+	Id           int       `json:"id"`
+	Username     string    `json:"username"`
+	Password     string    `json:"password"`
+	CreatedDate  time.Time `json:"created_date"`
+	ModifiedDate time.Time `json:"modified_date"`
 }

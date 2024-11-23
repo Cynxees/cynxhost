@@ -1,6 +1,7 @@
 package app
 
 import (
+	"cynxhost/internal/dependencies"
 	"cynxhost/internal/repository/database"
 	"cynxhost/internal/repository/database/mysql/tbluser"
 )
@@ -8,6 +9,7 @@ import (
 type Repos struct {
 	TblUser database.TblUser
 	TblInstance database.TblInstance
+	JWTManager *dependencies.JWTManager
 }
 
 func NewRepos(dependencies *Dependencies) *Repos {
@@ -17,5 +19,6 @@ func NewRepos(dependencies *Dependencies) *Repos {
 	return &Repos{
 		TblUser: tblUser,
 		TblInstance: nil,
+		JWTManager: dependencies.JWTManager,
 	}
 }
