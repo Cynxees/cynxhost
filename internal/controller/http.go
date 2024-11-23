@@ -2,7 +2,7 @@ package controller
 
 import (
 	"errors"
-	"mchost/internal/app"
+	"cynxhost/internal/app"
 	"net/http"
 	"strconv"
 	"time"
@@ -21,18 +21,20 @@ func NewHttpServer(app *app.App) (*HttpServer, error) {
 
 	r.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK"))
+		if _, err := w.Write([]byte("OK")); err != nil {
+			app.Dependencies.Logger.Errorf("Failed to write response: %v", err)
+		}
 	})
-	
+
 	address := app.Dependencies.Config.App.Address + ":" + strconv.Itoa(app.Dependencies.Config.App.Port)
 	app.Dependencies.Logger.Infof("Starting http server on %s\n", address)
 
 	srv := &http.Server{
-		Addr: address,
+		Addr:         address,
 		WriteTimeout: time.Second * 60,
-		ReadTimeout: time.Second * 60,
-		IdleTimeout: time.Second * 60,
-		Handler: apmhttp.Wrap(r),
+		ReadTimeout:  time.Second * 60,
+		IdleTimeout:  time.Second * 60,
+		Handler:      apmhttp.Wrap(r),
 	}
 
 	return &HttpServer{srv}, nil

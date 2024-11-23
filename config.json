@@ -2,7 +2,7 @@
   "app": {
     "address": "127.0.0.1",
     "port": 3000,
-    "name": "MCHOST", 
+    "name": "CYNXHOST",
     "debug": true,
     "key": "andrewisacutiepatootie"
   },
@@ -13,7 +13,7 @@
     "mysql": {
       "host": "127.0.0.1",
       "port": 3306,
-      "database": "mchost",
+      "database": "cynxhost",
       "username": "user",
       "password": "password",
       "dialect": "mysql",
@@ -25,7 +25,7 @@
       }
     },
     "redis": {
-      "host": "localhost", 
+      "host": "localhost",
       "port": 6379,
       "password": ""
     },
@@ -37,21 +37,18 @@
     "rabbitmq": {
       "host": "localhost",
       "port": 5672,
-      "username": "guest", 
+      "username": "guest",
       "password": "guest"
     }
   },
   "logging": {
     "level": "info",
     "format": "json",
-    "destinations": [
-      "console",
-      "elasticsearch"
-    ]
+    "destinations": ["console", "elasticsearch"]
   },
   "security": {
     "jwt": {
-      "secret": "your-secret-key",
+      "secret": "${JWT_SECRET}",
       "expiresIn": "1h"
     },
     "cors": {
@@ -60,7 +57,7 @@
     }
   },
   "aws": {
-    "accessKeyId": "AKIARBIEDLBYV72UB374",
-    "accessKeySecret": "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"
+    "accessKeyId": "${AWS_ACCESS_KEY_ID}",
+    "accessKeySecret": "${AWS_ACCESS_KEY_SECRET}"
   }
 }

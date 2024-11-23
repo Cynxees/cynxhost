@@ -17,7 +17,7 @@ func NewLogger(config *Config) *logrus.Logger {
 		esLogger.Fatalf("Failed to create elasticsearch client: %v", err)
 	}
 
-	hook, err := elasticLog.NewAsyncElasticHook(client, config.App.Name, logrus.InfoLevel, "mchost-logs")
+	hook, err := elasticLog.NewAsyncElasticHook(client, config.App.Name, logrus.InfoLevel, "cynxhost-logs")
 	if err != nil {
 		logrus.Fatalf("Failed to create Elasticsearch hook: %v", err)
 	}

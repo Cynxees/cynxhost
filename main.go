@@ -2,8 +2,11 @@ package main
 
 import (
 	"context"
-	"mchost/internal/app"
-	"mchost/internal/controller"
+	"cynxhost/internal/app"
+	"cynxhost/internal/controller"
+	"flag"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -11,6 +14,15 @@ func main() {
 	defer func() {
 		cancel()
 	}()
+
+	envFile := flag.String("env", ".env", ".env")
+	flag.Parse()
+
+	// Load the specified .env file
+	err := godotenv.Load(*envFile)
+	if err != nil {
+		panic(err)
+	}
 
 	app, err := app.NewApp(ctx, "config.json")
 	if err != nil {
