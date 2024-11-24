@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"cynxhost/internal/dependencies"
 	"cynxhost/internal/helper"
 	"cynxhost/internal/model/response"
@@ -37,7 +38,9 @@ func AuthMiddleware(JWTManager *dependencies.JWTManager, next http.HandlerFunc, 
 
 		// You could verify the token here if needed (e.g., check JWT signature)
 		token := parts[1]
-		if _, err := JWTManager.VerifyToken(token); err != nil { // Replace with your token verification logic
+		claims, err := JWTManager.VerifyToken(token)
+		
+		if err != nil { // Replace with your token verification logic
 			apiResponse := response.APIResponse{
 				Code: responsecode.CodeAuthenticationError,
 				Error: "Invalid or expired access token",
@@ -46,7 +49,15 @@ func AuthMiddleware(JWTManager *dependencies.JWTManager, next http.HandlerFunc, 
 			return
 		}
 
-		next(w, r)
+		 // Extract user information from claims
+		 userId := claims.UserId   // Adjust according to your claims structure
+		 
+		 // Inject user data into the request context
+		 ctx := context.WithValue(r.Context(), "user", map[string]interface{}{
+				 "id":       userId,
+		 })
+
+		next(w, r.WithContext(ctx))
 	}
 
 }
