@@ -7,7 +7,7 @@ import (
 type App struct {
 	Dependencies *Dependencies
 	Repos        *Repos
-	Usecases     *Usecases
+	Usecases     *UseCases
 }
 
 func NewApp(ctx context.Context, configPath string) (*App, error) {
@@ -22,7 +22,7 @@ func NewApp(ctx context.Context, configPath string) (*App, error) {
 	repos := NewRepos(dependencies)
 
 	logger.Infoln("Initializing Usecases")
-	usecases := NewUsecases(repos)
+	usecases := NewUseCases(repos)
 
 	logger.Infoln("App initialized")
 	return &App{

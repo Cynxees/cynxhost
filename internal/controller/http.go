@@ -2,10 +2,10 @@ package controller
 
 import (
 	"cynxhost/internal/app"
-	"cynxhost/internal/controller/user/checkusernamecontroller"
-	"cynxhost/internal/controller/user/loginusercontroller"
-	"cynxhost/internal/controller/user/paginateusercontroller"
-	"cynxhost/internal/controller/user/registerusercontroller"
+	"cynxhost/internal/controller/usercontroller/checkusernamecontroller"
+	"cynxhost/internal/controller/usercontroller/loginusercontroller"
+	"cynxhost/internal/controller/usercontroller/paginateusercontroller"
+	"cynxhost/internal/controller/usercontroller/registerusercontroller"
 	"cynxhost/internal/middleware"
 	"errors"
 	"net/http"

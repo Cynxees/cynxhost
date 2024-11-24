@@ -6,6 +6,8 @@ import (
 )
 
 type TblInstance interface {
-	InsertInstance(ctx context.Context, instance entity.TblInstance) (context.Context, entity.TblInstance, error)
+	CreateInstance(ctx context.Context, instance entity.TblInstance) (context.Context, entity.TblInstance, error)
 	GetInstance(ctx context.Context, key, value string) (context.Context, entity.TblInstance, error)
+	UpdateInstance(ctx context.Context, instance entity.TblInstance) (context.Context, entity.TblInstance, error)
+	DeleteInstance(ctx context.Context, instanceId int) (context.Context, error)
 }
