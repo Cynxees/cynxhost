@@ -14,6 +14,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"go.elastic.co/apm/module/apmhttp/v2"
+	"github.com/rs/cors"
 )
 
 type HttpServer struct {
@@ -21,6 +22,12 @@ type HttpServer struct {
 }
 
 func NewHttpServer(app *app.App) (*HttpServer, error) {
+
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"http://localhost:3001"}, // replace with your frontend URL
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"}, // allowed methods
+		AllowedHeaders: []string{"Content-Type"}, // allowed headers
+})
 
 	r := mux.NewRouter()
 	routerPath := app.Dependencies.Config.Router.Default
@@ -49,6 +56,8 @@ func NewHttpServer(app *app.App) (*HttpServer, error) {
 		}
 	})
 
+	corsHandler := c.Handler(r)
+
 	address := app.Dependencies.Config.App.Address + ":" + strconv.Itoa(app.Dependencies.Config.App.Port)
 	app.Dependencies.Logger.Infof("Starting http server on %s\n", address)
 
@@ -57,7 +66,7 @@ func NewHttpServer(app *app.App) (*HttpServer, error) {
 		WriteTimeout: time.Second * 60,
 		ReadTimeout:  time.Second * 60,
 		IdleTimeout:  time.Second * 60,
-		Handler:      apmhttp.Wrap(r),
+		Handler:      apmhttp.Wrap(corsHandler),
 	}
 
 	return &HttpServer{srv}, nil

@@ -15,6 +15,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/olivere/elastic/v7 v7.0.32
 	github.com/pressly/goose/v3 v3.23.0
+	github.com/rs/cors v1.11.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/viper v1.19.0
 	go.elastic.co/apm/module/apmhttp/v2 v2.6.2
