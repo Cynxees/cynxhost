@@ -1,8 +1,7 @@
 package entity
 
-type ParametersResult struct {
-	Id          int
-	Key         string
+type TblParameters struct {
+	Name        string
 	Value       string
 	Description string
 }

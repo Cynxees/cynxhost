@@ -1,18 +1,18 @@
 package app
 
 import (
-	"cynxhost/internal/usecase"
-	"cynxhost/internal/usecase/checkusernameusecase"
-	"cynxhost/internal/usecase/loginuserusecase"
-	"cynxhost/internal/usecase/paginateuserusecase"
-	"cynxhost/internal/usecase/registeruserusecase"
+	"cynxhost/internal/usecase/userusecase"
+	"cynxhost/internal/usecase/userusecase/checkusernameusecase"
+	"cynxhost/internal/usecase/userusecase/loginuserusecase"
+	"cynxhost/internal/usecase/userusecase/paginateuserusecase"
+	"cynxhost/internal/usecase/userusecase/registeruserusecase"
 )
 
 type Usecases struct {
-	RegisterUserUseCase  usecase.RegisterUserUseCase
-	LoginUserUseCase     usecase.LoginUserUseCase
-	PaginateUserUseCase  usecase.PaginateUserUseCase
-	CheckUsernameUseCase usecase.CheckUsernameUseCase
+	RegisterUserUseCase  userusecase.RegisterUserUseCase
+	LoginUserUseCase     userusecase.LoginUserUseCase
+	PaginateUserUseCase  userusecase.PaginateUserUseCase
+	CheckUsernameUseCase userusecase.CheckUsernameUseCase
 }
 
 func NewUsecases(repos *Repos) *Usecases {

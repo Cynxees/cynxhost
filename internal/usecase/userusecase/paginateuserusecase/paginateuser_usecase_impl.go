@@ -4,14 +4,14 @@ import (
 	"context"
 	"cynxhost/internal/model/entity"
 	"cynxhost/internal/repository/database"
-	"cynxhost/internal/usecase"
+	"cynxhost/internal/usecase/userusecase"
 )
 
 type PaginateUserUseCaseImpl struct {
 	tblUser database.TblUser
 }
 
-func New(tblUser database.TblUser) usecase.PaginateUserUseCase {
+func New(tblUser database.TblUser) userusecase.PaginateUserUseCase {
 	return &PaginateUserUseCaseImpl{
 		tblUser: tblUser,
 	}

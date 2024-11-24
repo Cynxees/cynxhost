@@ -5,7 +5,7 @@ import (
 	"cynxhost/internal/dependencies"
 	"cynxhost/internal/model/entity"
 	"cynxhost/internal/repository/database"
-	"cynxhost/internal/usecase"
+	"cynxhost/internal/usecase/userusecase"
 	"errors"
 )
 
@@ -14,7 +14,7 @@ type RegisterUserUseCaseImpl struct {
 	jwtManager *dependencies.JWTManager
 }
 
-func New(tblUser database.TblUser, jwtManager *dependencies.JWTManager) usecase.RegisterUserUseCase {
+func New(tblUser database.TblUser, jwtManager *dependencies.JWTManager) userusecase.RegisterUserUseCase {
 	return &RegisterUserUseCaseImpl{
 		tblUser:    tblUser,
 		jwtManager: jwtManager,

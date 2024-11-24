@@ -5,18 +5,18 @@ import (
 	"cynxhost/internal/model/request"
 	"cynxhost/internal/model/response"
 	"cynxhost/internal/model/response/responsecode"
-	"cynxhost/internal/usecase"
+	"cynxhost/internal/usecase/userusecase"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
 )
 
 type PaginateUserController struct {
-	uc        usecase.PaginateUserUseCase
+	uc        userusecase.PaginateUserUseCase
 	validator *validator.Validate
 }
 
-func New(paginateUserUseCase usecase.PaginateUserUseCase, validate *validator.Validate) *PaginateUserController {
+func New(paginateUserUseCase userusecase.PaginateUserUseCase, validate *validator.Validate) *PaginateUserController {
 	return &PaginateUserController{
 		uc:        paginateUserUseCase,
 		validator: validate,

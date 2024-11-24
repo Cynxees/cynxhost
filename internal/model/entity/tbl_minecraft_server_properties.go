@@ -1,6 +1,8 @@
 package entity
 
 type TblMinecraftServerProperties struct {
-	Key   string
-	Value string
+	Id             int
+	HostTemplateId int
+	Name           string
+	Value          string
 }

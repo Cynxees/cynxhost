@@ -5,5 +5,4 @@ type TblHostTemplate struct {
 	OwnerId           int
 	AmiId             int
 	InstanceTypeId    int
-	MinecraftConfigId int
 }

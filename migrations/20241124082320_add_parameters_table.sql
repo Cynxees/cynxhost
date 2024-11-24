@@ -1,8 +1,7 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE tbl_parameters (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  key VARCHAR(255) NOT NULL,
+  name VARCHAR(255) NOT NULL PRIMARY KEY,
   value TEXT NOT NULL,
   description TEXT
 );

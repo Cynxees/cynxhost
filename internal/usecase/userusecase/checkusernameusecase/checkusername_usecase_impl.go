@@ -3,7 +3,7 @@ package checkusernameusecase
 import (
 	"context"
 	"cynxhost/internal/repository/database"
-	"cynxhost/internal/usecase"
+	"cynxhost/internal/usecase/userusecase"
 	"errors"
 )
 
@@ -11,7 +11,7 @@ type CheckUsernameUseCaseImpl struct {
 	tblUser database.TblUser
 }
 
-func New(tblUser database.TblUser) usecase.CheckUsernameUseCase {
+func New(tblUser database.TblUser) userusecase.CheckUsernameUseCase {
 	return &CheckUsernameUseCaseImpl{
 		tblUser: tblUser,
 	}

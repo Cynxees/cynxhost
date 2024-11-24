@@ -4,7 +4,7 @@ import (
 	"context"
 	"cynxhost/internal/dependencies"
 	"cynxhost/internal/repository/database"
-	"cynxhost/internal/usecase"
+	"cynxhost/internal/usecase/userusecase"
 	"errors"
 )
 
@@ -13,7 +13,7 @@ type LoginUserUseCaseImpl struct {
 	jwtManager *dependencies.JWTManager
 }
 
-func New(tblUser database.TblUser, jwtManager *dependencies.JWTManager) usecase.LoginUserUseCase {
+func New(tblUser database.TblUser, jwtManager *dependencies.JWTManager) userusecase.LoginUserUseCase {
 	return &LoginUserUseCaseImpl{
 		tblUser: tblUser,
 		jwtManager: jwtManager,

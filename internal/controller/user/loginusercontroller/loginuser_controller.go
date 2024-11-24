@@ -5,18 +5,18 @@ import (
 	"cynxhost/internal/model/request"
 	"cynxhost/internal/model/response"
 	"cynxhost/internal/model/response/responsecode"
-	"cynxhost/internal/usecase"
+	"cynxhost/internal/usecase/userusecase"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
 )
 
 type LoginUserController struct {
-	uc        usecase.LoginUserUseCase
+	uc        userusecase.LoginUserUseCase
 	validator *validator.Validate
 }
 
-func New(loginUserUseCase usecase.LoginUserUseCase, validate *validator.Validate) *LoginUserController {
+func New(loginUserUseCase userusecase.LoginUserUseCase, validate *validator.Validate) *LoginUserController {
 	return &LoginUserController{
 		uc:        loginUserUseCase,
 		validator: validate,
