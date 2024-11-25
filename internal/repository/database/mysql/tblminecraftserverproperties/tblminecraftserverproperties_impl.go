@@ -5,6 +5,8 @@ import (
 	"cynxhost/internal/model/entity"
 	"cynxhost/internal/repository/database"
 	"database/sql"
+	"fmt"
+	"strings"
 )
 
 type TblMinecraftServerPropertiesImpl struct {
@@ -113,6 +115,71 @@ func (database *TblMinecraftServerPropertiesImpl) UpdateMinecraftServerPropertie
 	_, err := database.DB.ExecContext(ctx, SQL, data.HostTemplateId, data.Name, data.Value, data.Id)
 	if err != nil {
 		return ctx, entity.TblMinecraftServerProperties{}, err
+	}
+
+	return ctx, data, nil
+}
+
+func (database *TblMinecraftServerPropertiesImpl) UpdateMultipleMinecraftServerProperties(ctx context.Context, data []entity.TblMinecraftServerProperties) (context.Context, []entity.TblMinecraftServerProperties, error) {
+	// Start a transaction
+	tx, err := database.DB.BeginTx(ctx, nil)
+	if err != nil {
+		return ctx, nil, err
+	}
+
+	// Build a single query to batch update
+	query := `
+		UPDATE tbl_minecraft_server_properties
+		SET
+			host_template_id = CASE id %s END,
+			name = CASE id %s END,
+			value = CASE id %s END
+		WHERE id IN (%s)
+	`
+
+	// Prepare variables to hold parts of the query
+	var (
+		caseHostTemplateId strings.Builder
+		caseName           strings.Builder
+		caseValue          strings.Builder
+		ids                []interface{}
+	)
+
+	// Construct the CASE statements and collect IDs
+	for _, prop := range data {
+		caseHostTemplateId.WriteString(fmt.Sprintf("WHEN %d THEN ? ", prop.Id))
+		caseName.WriteString(fmt.Sprintf("WHEN %d THEN ? ", prop.Id))
+		caseValue.WriteString(fmt.Sprintf("WHEN %d THEN ? ", prop.Id))
+		ids = append(ids, prop.HostTemplateId, prop.Name, prop.Value, prop.Id)
+	}
+
+	// Format the query
+	query = fmt.Sprintf(
+		query,
+		caseHostTemplateId.String(),
+		caseName.String(),
+		caseValue.String(),
+		strings.Repeat("?,", len(data)-1)+"?",
+	)
+
+	// Execute the query
+	stmt, err := tx.PrepareContext(ctx, query)
+	if err != nil {
+		_ = tx.Rollback()
+		return ctx, nil, err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.ExecContext(ctx, ids...)
+	if err != nil {
+		_ = tx.Rollback()
+		return ctx, nil, err
+	}
+
+	// Commit the transaction
+	err = tx.Commit()
+	if err != nil {
+		return ctx, nil, err
 	}
 
 	return ctx, data, nil
