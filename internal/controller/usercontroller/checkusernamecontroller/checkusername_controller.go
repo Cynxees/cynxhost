@@ -2,7 +2,7 @@ package checkusernamecontroller
 
 import (
 	"cynxhost/internal/helper"
-	"cynxhost/internal/model/request"
+	"cynxhost/internal/model/request/userrequest"
 	"cynxhost/internal/model/response"
 	"cynxhost/internal/model/response/responsecode"
 	"cynxhost/internal/usecase/userusecase"
@@ -25,7 +25,7 @@ func New(checkUsernameUseCase userusecase.CheckUsernameUseCase, validate *valida
 
 func (controller *CheckusernameController) CheckUsername(w http.ResponseWriter, r *http.Request) response.APIResponse {
 
-	var requestBody request.CheckUsernameRequest
+	var requestBody userrequest.CheckUsernameRequest
 	var apiResponse response.APIResponse
 
 	if err := helper.DecodeAndValidateRequest(r, &requestBody, controller.validator); err != nil {

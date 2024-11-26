@@ -2,6 +2,7 @@ package app
 
 import (
 	"cynxhost/internal/dependencies"
+	"log"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -24,13 +25,16 @@ type Dependencies struct {
 
 func NewDependencies(configPath string) *Dependencies {
 
+	log.Println("Loading Config")
 	config, err := dependencies.LoadConfig(configPath)
 	if err != nil {
 		panic(err)
 	}
 
+	log.Println("Initializing Logger")
 	logger := dependencies.NewLogger(config)
 
+	logger.Infoln("Initializing Validator")
 	validator := validator.New()
 
 	logger.Infoln("Connecting to Redis")

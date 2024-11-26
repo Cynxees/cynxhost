@@ -13,8 +13,8 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"go.elastic.co/apm/module/apmhttp/v2"
 	"github.com/rs/cors"
+	"go.elastic.co/apm/module/apmhttp/v2"
 )
 
 type HttpServer struct {
@@ -33,21 +33,27 @@ func NewHttpServer(app *app.App) (*HttpServer, error) {
 	routerPath := app.Dependencies.Config.Router.Default
 	debug := app.Dependencies.Config.App.Debug
 
-	handlePostFunc := func(path string, handler middleware.HandlerFuncWithHelper, requireAuth bool) {
+	handleRouterFunc := func(path string, handler middleware.HandlerFuncWithHelper, requireAuth bool) *mux.Route {
 		wrappedHandler := middleware.WrapHandler(handler, debug)
 
 		if requireAuth && !debug {
 			wrappedHandler = middleware.AuthMiddleware(app.Dependencies.JWTManager, wrappedHandler, debug)
 		}
 
-		r.HandleFunc(routerPath+path, wrappedHandler).Methods("POST")
+		return r.HandleFunc(routerPath+path, wrappedHandler).Methods("POST", "GET")
 	}
 
-	handlePostFunc("/register-user", registerusercontroller.New(app.Usecases.RegisterUserUseCase, app.Dependencies.Validator).RegisterUser, false)
-	handlePostFunc("/login-user", loginusercontroller.New(app.Usecases.LoginUserUseCase, app.Dependencies.Validator).LoginUser, false)
-	handlePostFunc("/check-username", checkusernamecontroller.New(app.Usecases.CheckUsernameUseCase, app.Dependencies.Validator).CheckUsername, false)
+	amiController := NewAmiController(app.Usecases.AmiUseCase, app.Dependencies.Validator)
 
-	handlePostFunc("/paginate-user", paginateusercontroller.New(app.Usecases.PaginateUserUseCase, app.Dependencies.Validator).PaginateUser, true)
+	// User
+	handleRouterFunc("/register-user", registerusercontroller.New(app.Usecases.RegisterUserUseCase, app.Dependencies.Validator).RegisterUser, false)
+	handleRouterFunc("/login-user", loginusercontroller.New(app.Usecases.LoginUserUseCase, app.Dependencies.Validator).LoginUser, false)
+	handleRouterFunc("/check-username", checkusernamecontroller.New(app.Usecases.CheckUsernameUseCase, app.Dependencies.Validator).CheckUsername, false)
+	handleRouterFunc("/paginate-user", paginateusercontroller.New(app.Usecases.PaginateUserUseCase, app.Dependencies.Validator).PaginateUser, true)
+
+	// Ami
+	handleRouterFunc("/get-all-ami", amiController.GetAllAmi, true)
+	handleRouterFunc("/get-ami", amiController.GetAmi, true)
 
 	r.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)

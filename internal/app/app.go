@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"log"
 )
 
 type App struct {
@@ -11,6 +12,8 @@ type App struct {
 }
 
 func NewApp(ctx context.Context, configPath string) (*App, error) {
+
+	log.Println("Initializing Dependencies")
 	dependencies := NewDependencies(configPath)
 
 	logger := dependencies.Logger

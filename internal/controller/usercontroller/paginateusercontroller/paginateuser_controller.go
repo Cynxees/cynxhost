@@ -2,7 +2,7 @@ package paginateusercontroller
 
 import (
 	"cynxhost/internal/helper"
-	"cynxhost/internal/model/request"
+	"cynxhost/internal/model/request/userrequest"
 	"cynxhost/internal/model/response"
 	"cynxhost/internal/model/response/responsecode"
 	"cynxhost/internal/usecase/userusecase"
@@ -25,7 +25,7 @@ func New(paginateUserUseCase userusecase.PaginateUserUseCase, validate *validato
 
 func (controller *PaginateUserController) PaginateUser(w http.ResponseWriter, r *http.Request) response.APIResponse {
 
-	var requestBody request.PaginateUserRequest
+	var requestBody userrequest.PaginateUserRequest
 	var apiResponse response.APIResponse
 
 	if err := helper.DecodeAndValidateRequest(r, &requestBody, controller.validator); err != nil {

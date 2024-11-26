@@ -20,15 +20,15 @@ func New(DB *sql.DB) database.TblAmi {
 func (database *TblAmiImpl) GetAmi(ctx context.Context, key, value string) (context.Context, entity.TblAmi, error) {
 	SQL := `
 		SELECT 
-			Id,
-			Name,
-			ImageId,
-			MinecraftEdition,
-			MinecraftVersion,
-			ModLoader,
-			ModLoaderVersion,
-			MinimumRam,
-			MinimumVcpu
+			id,
+			name,
+			image_id,
+			minecraft_edition,
+			minecraft_version,
+			mod_loader,
+			mod_loader_version,
+			minimum_ram,
+			minimum_vcpu
 		FROM 
 			tbl_ami
 		WHERE 
@@ -59,15 +59,16 @@ func (database *TblAmiImpl) GetAmi(ctx context.Context, key, value string) (cont
 
 func (database *TblAmiImpl) GetAllAmi(ctx context.Context) (context.Context, []entity.TblAmi, error) {
 	SQL := `
-			Id,
-			Name,
-			ImageId,
-			MinecraftEdition,
-			MinecraftVersion,
-			ModLoader,
-			ModLoaderVersion,
-			MinimumRam,
-			MinimumVcpu
+		SELECT
+			id,
+			name,
+			image_id,
+			minecraft_edition,
+			minecraft_version,
+			mod_loader,
+			mod_loader_version,
+			minimum_ram,
+			minimum_vcpu
 		FROM 
 			tbl_ami
 	`
