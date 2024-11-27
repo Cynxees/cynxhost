@@ -1,48 +1,81 @@
 package dependencies
 
 import (
-	"database/sql"
+	"fmt"
 	"log"
-	"strconv"
 
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/pressly/goose/v3"
+
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+	"gorm.io/gorm/schema"
 )
 
 type DatabaseClient struct {
-	Db *sql.DB
+	Db *gorm.DB
 }
 
 func NewDatabaseClient(config *Config) (*DatabaseClient, error) {
+	// Construct the DSN (Data Source Name)
+	dataSourceName := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true",
+		config.Database.MySQL.Username,
+		config.Database.MySQL.Password,
+		config.Database.MySQL.Host,
+		config.Database.MySQL.Port,
+		config.Database.MySQL.Database,
+	)
 
-	dataSourceName := config.Database.MySQL.Username + ":" + config.Database.MySQL.Password + "@tcp(" + config.Database.MySQL.Host + ":" + strconv.Itoa(config.Database.MySQL.Port) + ")/" + config.Database.MySQL.Database + "?parseTime=true"
-
-	db, err := sql.Open("mysql", dataSourceName)
+	// Open a connection with GORM using the MySQL driver
+	db, err := gorm.Open(mysql.Open(dataSourceName), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info), // Enable GORM's built-in logging
+		NamingStrategy: schema.NamingStrategy{
+			SingularTable: true,
+		},
+	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
 
-	if err = db.Ping(); err != nil {
-		return nil, err
+	// Check the connection
+	sqlDB, err := db.DB()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get generic database object: %w", err)
+	}
+	if err = sqlDB.Ping(); err != nil {
+		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
 
 	return &DatabaseClient{Db: db}, nil
 }
 
 func (client *DatabaseClient) Close() error {
-	return client.Db.Close()
+	sqlDB, err := client.Db.DB()
+	if err != nil {
+		return fmt.Errorf("failed to get generic database object: %w", err)
+	}
+	return sqlDB.Close()
 }
 
-func (client *DatabaseClient) RunMigrations(migrationsPath string) {
+func (client *DatabaseClient) RunMigrations(migrationsPath string) error {
 	// Set the dialect to MySQL
 	if err := goose.SetDialect("mysql"); err != nil {
-    log.Fatalf("Failed to set dialect: %v", err)
-  }
+		log.Fatalf("Failed to set dialect: %v", err)
+		return err
+	}
+
+	sqlDb, err := client.Db.DB()
+	if err != nil {
+		log.Fatalf("Failed to get generic database object: %v", err)
+		return err
+	}
 
 	// Run migrations
-	if err := goose.Up(client.Db, migrationsPath); err != nil {
+	if err := goose.Up(sqlDb, migrationsPath); err != nil {
 		log.Fatalf("Failed to run migrations: %v", err)
+		return err
 	}
 
 	log.Println("Migrations applied successfully")
+	return nil
 }

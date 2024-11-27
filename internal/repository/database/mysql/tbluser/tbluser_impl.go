@@ -4,110 +4,59 @@ import (
 	"context"
 	"cynxhost/internal/model/entity"
 	"cynxhost/internal/repository/database"
-	"database/sql"
+
+	"gorm.io/gorm"
 )
 
 type TblUserImpl struct {
-	DB *sql.DB
+	DB *gorm.DB
 }
 
-func New(DB *sql.DB) database.TblUser {
+func New(DB *gorm.DB) database.TblUser {
 	return &TblUserImpl{
 		DB: DB,
 	}
 }
 
 func (database *TblUserImpl) InsertUser(ctx context.Context, user entity.TblUser) (context.Context, int, error) {
-	SQL := `
-    INSERT INTO tbl_user (username, password)
-    VALUES (?, ?)
-  `
-
-	result, err := database.DB.ExecContext(ctx, SQL, user.Username, user.Password)
+	err := database.DB.WithContext(ctx).Create(&user).Error
 	if err != nil {
 		return ctx, 0, err
 	}
 
-	id, err := result.LastInsertId()
-	if err != nil {
-		return ctx, 0, err
-	}
-
-	return ctx, int(id), nil
+	return ctx, user.Id, nil
 }
 
 func (database *TblUserImpl) CheckUserExists(ctx context.Context, key string, value string) (context.Context, bool, error) {
-	SQL := `
-		SELECT id
-		FROM tbl_user
-		WHERE ` + key + ` = ?
-	`
-
-	row := database.DB.QueryRowContext(ctx, SQL, value)
-	var id int
-	err := row.Scan(&id)
+	var count int64
+	err := database.DB.WithContext(ctx).Model(&entity.TblUser{}).Where(key+" = ?", value).Count(&count).Error
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return ctx, false, nil
-		}
 		return ctx, false, err
 	}
 
-	return ctx, true, nil
+	return ctx, count > 0, nil
 }
 
 func (database *TblUserImpl) GetUser(ctx context.Context, key string, value string) (context.Context, entity.TblUser, error) {
-	SQL := `
-    SELECT id, username, password, created_date, modified_date
-    FROM tbl_user
-    WHERE ` + key + ` = ?
-  `
-
-	row := database.DB.QueryRowContext(ctx, SQL, value)
-	paramData := entity.TblUser{}
-	err := row.Scan(
-		&paramData.Id,
-		&paramData.Username,
-		&paramData.Password,
-		&paramData.CreatedDate,
-		&paramData.ModifiedDate,
-	)
+	var user entity.TblUser
+	err := database.DB.WithContext(ctx).Where(key+" = ?", value).First(&user).Error
 	if err != nil {
-		return ctx, paramData, err
+		if err == gorm.ErrRecordNotFound {
+			return ctx, user, nil
+		}
+		return ctx, user, err
 	}
 
-	return ctx, paramData, nil
+	return ctx, user, nil
 }
 
 func (database *TblUserImpl) PaginateUser(ctx context.Context, page int, size int) (context.Context, []entity.TblUser, error) {
+	var users []entity.TblUser
 	offset := (page - 1) * size
-	SQL := `
-		SELECT id, username, password, created_date, modified_date
-		FROM tbl_user
-		LIMIT ? OFFSET ?
-	`
-
-	rows, err := database.DB.QueryContext(ctx, SQL, size, offset)
+	err := database.DB.WithContext(ctx).Limit(size).Offset(offset).Find(&users).Error
 	if err != nil {
 		return ctx, nil, err
 	}
-	defer rows.Close()
 
-	var paramData []entity.TblUser
-	for rows.Next() {
-		data := entity.TblUser{}
-		err := rows.Scan(
-			&data.Id,
-			&data.Username,
-			&data.Password,
-			&data.CreatedDate,
-			&data.ModifiedDate,
-		)
-		if err != nil {
-			return ctx, nil, err
-		}
-		paramData = append(paramData, data)
-	}
-
-	return ctx, paramData, nil
+	return ctx, users, nil
 }

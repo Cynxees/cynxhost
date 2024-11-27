@@ -1,5 +1,7 @@
 package entity
 
+import "time"
+
 type TblAmi struct {
 	Id               int
 	Name             string
@@ -10,4 +12,6 @@ type TblAmi struct {
 	ModLoaderVersion string
 	MinimumRam       int
 	MinimumVcpu      int
+	CreatedDate      time.Time `gorm:"autoCreateTime"`
+	ModifiedDate     time.Time `gorm:"autoUpdateTime"`
 }

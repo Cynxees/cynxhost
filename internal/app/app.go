@@ -19,7 +19,11 @@ func NewApp(ctx context.Context, configPath string) (*App, error) {
 	logger := dependencies.Logger
 
 	logger.Infoln("Running database migrations")
-	dependencies.DatabaseClient.RunMigrations("migrations")
+	err := dependencies.DatabaseClient.RunMigrations("migrations")
+	if err != nil {
+		logger.Fatalln("Failed to run migrations: ", err)
+		panic(err)
+	}
 
 	logger.Infoln("Initializing Repositories")
 	repos := NewRepos(dependencies)

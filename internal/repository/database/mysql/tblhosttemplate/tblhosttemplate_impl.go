@@ -4,57 +4,41 @@ import (
 	"context"
 	"cynxhost/internal/model/entity"
 	"cynxhost/internal/repository/database"
-	"database/sql"
 	"strconv"
+
+	"gorm.io/gorm"
 )
 
 type TblHostTemplateImpl struct {
-	DB *sql.DB
+	DB *gorm.DB
 }
 
-func New(DB *sql.DB) database.TblHostTemplate {
+func New(DB *gorm.DB) database.TblHostTemplate {
 	return &TblHostTemplateImpl{
 		DB: DB,
 	}
 }
 
 func (database *TblHostTemplateImpl) CreateHostTemplate(ctx context.Context, hostTemplate entity.TblHostTemplate) (context.Context, entity.TblHostTemplate, error) {
-	SQL := `
-		INSERT INTO tbl_host_template (owner_id, ami_id, instance_type_id)
-		VALUES (?, ?, ?)
-	`
-
-	result, err := database.DB.ExecContext(ctx, SQL, hostTemplate.OwnerId, hostTemplate.AmiId, hostTemplate.InstanceTypeId)
+	err := database.DB.WithContext(ctx).Create(&hostTemplate).Error
 	if err != nil {
 		return ctx, entity.TblHostTemplate{}, err
 	}
 
-	id, err := result.LastInsertId()
+	ctx, createdData, err := database.GetHostTemplate(ctx, "id", strconv.Itoa(hostTemplate.Id))
 	if err != nil {
 		return ctx, entity.TblHostTemplate{}, err
 	}
 
-	ctx, createdData, err := database.GetHostTemplate(ctx, "id", strconv.Itoa(int(id)))
-	if err != nil {
-		return ctx, entity.TblHostTemplate{}, err
-	}
-	
 	return ctx, createdData, nil
 }
 
 func (database *TblHostTemplateImpl) GetHostTemplate(ctx context.Context, key, value string) (context.Context, entity.TblHostTemplate, error) {
-	SQL := `
-		SELECT id, owner_id, ami_id, instance_type_id
-		FROM tbl_host_template
-		WHERE ` + key + ` = ?
-	`
-
-	row := database.DB.QueryRowContext(ctx, SQL, value)
-
 	var hostTemplate entity.TblHostTemplate
-	err := row.Scan(&hostTemplate.Id, &hostTemplate.OwnerId, &hostTemplate.AmiId, &hostTemplate.InstanceTypeId)
+
+	err := database.DB.WithContext(ctx).Where(key+" = ?", value).First(&hostTemplate).Error
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if err == gorm.ErrRecordNotFound {
 			return ctx, entity.TblHostTemplate{}, nil
 		}
 		return ctx, entity.TblHostTemplate{}, err
@@ -64,28 +48,10 @@ func (database *TblHostTemplateImpl) GetHostTemplate(ctx context.Context, key, v
 }
 
 func (database *TblHostTemplateImpl) GetAllUserOwnedHostTemplate(ctx context.Context, userId int) (context.Context, []entity.TblHostTemplate, error) {
-	SQL := `
-		SELECT id, owner_id, ami_id, instance_type_id
-		FROM tbl_host_template
-		WHERE owner_id = ?
-	`
-
-	rows, err := database.DB.QueryContext(ctx, SQL, userId)
-	if err != nil {
-		return ctx, nil, err
-	}
-	defer rows.Close()
-
 	var hostTemplates []entity.TblHostTemplate
-	for rows.Next() {
-		var hostTemplate entity.TblHostTemplate
-		if err := rows.Scan(&hostTemplate.Id, &hostTemplate.OwnerId, &hostTemplate.AmiId, &hostTemplate.InstanceTypeId); err != nil {
-			return ctx, nil, err
-		}
-		hostTemplates = append(hostTemplates, hostTemplate)
-	}
 
-	if err := rows.Err(); err != nil {
+	err := database.DB.WithContext(ctx).Where("owner_id = ?", userId).Find(&hostTemplates).Error
+	if err != nil {
 		return ctx, nil, err
 	}
 
@@ -93,18 +59,7 @@ func (database *TblHostTemplateImpl) GetAllUserOwnedHostTemplate(ctx context.Con
 }
 
 func (database *TblHostTemplateImpl) UpdateHostTemplate(ctx context.Context, hostTemplate entity.TblHostTemplate) (context.Context, entity.TblHostTemplate, error) {
-	SQL := `
-		UPDATE tbl_host_template
-		SET owner_id = ?, ami_id = ?, instance_type_id = ?
-		WHERE id = ?
-	`
-
-	result, err := database.DB.ExecContext(ctx, SQL, hostTemplate.OwnerId, hostTemplate.AmiId, hostTemplate.InstanceTypeId, hostTemplate.Id)
-	if err != nil {
-		return ctx, entity.TblHostTemplate{}, err
-	}
-
-	_, err = result.RowsAffected()
+	err := database.DB.WithContext(ctx).Save(&hostTemplate).Error
 	if err != nil {
 		return ctx, entity.TblHostTemplate{}, err
 	}
@@ -118,12 +73,7 @@ func (database *TblHostTemplateImpl) UpdateHostTemplate(ctx context.Context, hos
 }
 
 func (database *TblHostTemplateImpl) DeleteHostTemplate(ctx context.Context, hostTemplateId int) (context.Context, error) {
-	SQL := `
-		DELETE FROM tbl_host_template
-		WHERE id = ?
-	`
-
-	_, err := database.DB.ExecContext(ctx, SQL, hostTemplateId)
+	err := database.DB.WithContext(ctx).Delete(&entity.TblHostTemplate{}, hostTemplateId).Error
 	if err != nil {
 		return ctx, err
 	}
