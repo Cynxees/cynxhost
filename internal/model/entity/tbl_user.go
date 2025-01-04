@@ -8,5 +8,5 @@ type TblUser struct {
 	Password     string    `gorm:"size:255;not null"`
 	Coin         int       `gorm:"default:0"`
 	CreatedDate  time.Time `gorm:"autoCreateTime"`
-	ModifiedDate time.Time `gorm:"autoUpdateTime"`
+	UpdatedDate  time.Time `gorm:"autoUpdateTime"`
 }
