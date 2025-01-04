@@ -43,17 +43,11 @@ func NewHttpServer(app *app.App) (*HttpServer, error) {
 		return r.HandleFunc(routerPath+path, wrappedHandler).Methods("POST", "GET")
 	}
 
-	amiController := NewAmiController(app.Usecases.AmiUseCase, app.Dependencies.Validator)
-
 	// User
 	handleRouterFunc("/register-user", registerusercontroller.New(app.Usecases.RegisterUserUseCase, app.Dependencies.Validator).RegisterUser, false)
 	handleRouterFunc("/login-user", loginusercontroller.New(app.Usecases.LoginUserUseCase, app.Dependencies.Validator).LoginUser, false)
 	handleRouterFunc("/check-username", checkusernamecontroller.New(app.Usecases.CheckUsernameUseCase, app.Dependencies.Validator).CheckUsername, false)
 	handleRouterFunc("/paginate-user", paginateusercontroller.New(app.Usecases.PaginateUserUseCase, app.Dependencies.Validator).PaginateUser, true)
-
-	// Ami
-	handleRouterFunc("/get-all-ami", amiController.GetAllAmi, true)
-	handleRouterFunc("/get-ami", amiController.GetAmi, true)
 
 	r.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)

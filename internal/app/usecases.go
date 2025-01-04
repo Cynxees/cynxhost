@@ -1,8 +1,6 @@
 package app
 
 import (
-	"cynxhost/internal/usecase"
-	"cynxhost/internal/usecase/amiusecase"
 	"cynxhost/internal/usecase/userusecase"
 	"cynxhost/internal/usecase/userusecase/checkusernameusecase"
 	"cynxhost/internal/usecase/userusecase/loginuserusecase"
@@ -17,8 +15,6 @@ type UseCases struct {
 	LoginUserUseCase     userusecase.LoginUserUseCase
 	PaginateUserUseCase  userusecase.PaginateUserUseCase
 	CheckUsernameUseCase userusecase.CheckUsernameUseCase
-
-	AmiUseCase usecase.AmiUseCase
 }
 
 func NewUseCases(repos *Repos) *UseCases {
@@ -30,7 +26,5 @@ func NewUseCases(repos *Repos) *UseCases {
 		LoginUserUseCase:     loginuserusecase.New(repos.TblUser, repos.JWTManager),
 		PaginateUserUseCase:  paginateuserusecase.New(repos.TblUser),
 		CheckUsernameUseCase: checkusernameusecase.New(repos.TblUser),
-
-		AmiUseCase: amiusecase.New(repos.TblAmi),
 	}
 }

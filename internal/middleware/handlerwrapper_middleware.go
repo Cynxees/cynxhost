@@ -14,7 +14,7 @@ func WrapHandler(handler HandlerFuncWithHelper, debug bool) http.HandlerFunc {
 		apiResponse := handler(w, r)
 		
 		if !debug && apiResponse.Error != "" {
-			apiResponse.Error = "Hidden Error, Debug Mode is Enabled"
+			apiResponse.Error = "Hidden Error, Debug Mode is Disabled"
 		}
 
 		if apiResponse.Code != "" {
