@@ -7,6 +7,4 @@ import (
 
 type ServerTemplateUseCase interface {
 	PaginateServerTemplate(ctx context.Context) (context.Context, []entity.TblServerTemplate, error)
-	huuuuuhhhhhuhueua
-	
 }
