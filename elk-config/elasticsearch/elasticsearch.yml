@@ -1,2 +1,2 @@
-cluster.name: "elasticsearch"
+cluster.name: elasticsearch
 network.host: localhost

@@ -24,10 +24,10 @@ type HttpServer struct {
 func NewHttpServer(app *app.App) (*HttpServer, error) {
 
 	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"http://localhost:3001"}, // replace with your frontend URL
+		AllowedOrigins: []string{"http://localhost:3001"},        // replace with your frontend URL
 		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"}, // allowed methods
-		AllowedHeaders: []string{"Content-Type"}, // allowed headers
-})
+		AllowedHeaders: []string{"Content-Type"},                 // allowed headers
+	})
 
 	r := mux.NewRouter()
 	routerPath := app.Dependencies.Config.Router.Default

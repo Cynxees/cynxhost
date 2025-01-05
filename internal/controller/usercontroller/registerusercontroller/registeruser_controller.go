@@ -3,7 +3,7 @@ package registerusercontroller
 import (
 	"cynxhost/internal/helper"
 	"cynxhost/internal/model/entity"
-	"cynxhost/internal/model/request/userrequest"
+	"cynxhost/internal/model/request"
 	"cynxhost/internal/model/response"
 	"cynxhost/internal/model/response/responsecode"
 	"cynxhost/internal/usecase/userusecase"
@@ -26,7 +26,7 @@ func New(registerUserUseCase userusecase.RegisterUserUseCase, validate *validato
 
 func (controller *RegisterUserController) RegisterUser(w http.ResponseWriter, r *http.Request) response.APIResponse {
 
-	var requestBody userrequest.RegisterUserRequest
+	var requestBody request.RegisterUserRequest
 	var apiResponse response.APIResponse
 
 	if err := helper.DecodeAndValidateRequest(r, &requestBody, controller.validator); err != nil {

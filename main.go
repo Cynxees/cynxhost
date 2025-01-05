@@ -11,24 +11,24 @@ import (
 )
 
 func main() {
-  log.Println("Starting CynxHost")
+	log.Println("Starting CynxHost")
 	ctx, cancel := context.WithCancel(context.Background())
 	defer func() {
 		cancel()
 	}()
 
-  log.Println("Parsing .env")
+	log.Println("Parsing .env")
 	envFile := flag.String("env", ".env", ".env")
 	flag.Parse()
 
 	// Load the specified .env file
-  log.Println("Loading .env")
+	log.Println("Loading .env")
 	err := godotenv.Load(*envFile)
 	if err != nil {
 		panic(err)
 	}
 
-  log.Println("Initializing App")
+	log.Println("Initializing App")
 	app, err := app.NewApp(ctx, "config.json")
 	if err != nil {
 		panic(err)
@@ -37,7 +37,7 @@ func main() {
 	logger := app.Dependencies.Logger
 
 	logger.Infoln("Creating http server")
-	httpServer, err := controller.NewHttpServer(app);
+	httpServer, err := controller.NewHttpServer(app)
 	if err != nil {
 		panic(err)
 	}

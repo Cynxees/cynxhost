@@ -3,6 +3,7 @@ package tbluser
 import (
 	"context"
 	"cynxhost/internal/model/entity"
+	"cynxhost/internal/model/request"
 	"cynxhost/internal/repository/database"
 
 	"gorm.io/gorm"
@@ -50,10 +51,10 @@ func (database *TblUserImpl) GetUser(ctx context.Context, key string, value stri
 	return ctx, user, nil
 }
 
-func (database *TblUserImpl) PaginateUser(ctx context.Context, page int, size int) (context.Context, []entity.TblUser, error) {
+func (database *TblUserImpl) PaginateUser(ctx context.Context, req request.PaginateRequest) (context.Context, []entity.TblUser, error) {
 	var users []entity.TblUser
-	offset := (page - 1) * size
-	err := database.DB.WithContext(ctx).Limit(size).Offset(offset).Find(&users).Error
+	offset := (req.Page - 1) * req.Size
+	err := database.DB.WithContext(ctx).Limit(req.Size).Offset(offset).Find(&users).Error
 	if err != nil {
 		return ctx, nil, err
 	}

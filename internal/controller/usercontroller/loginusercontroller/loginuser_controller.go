@@ -2,7 +2,7 @@ package loginusercontroller
 
 import (
 	"cynxhost/internal/helper"
-	"cynxhost/internal/model/request/userrequest"
+	"cynxhost/internal/model/request"
 	"cynxhost/internal/model/response"
 	"cynxhost/internal/model/response/responsecode"
 	"cynxhost/internal/usecase/userusecase"
@@ -25,7 +25,7 @@ func New(loginUserUseCase userusecase.LoginUserUseCase, validate *validator.Vali
 
 func (controller *LoginUserController) LoginUser(w http.ResponseWriter, r *http.Request) response.APIResponse {
 
-	var requestBody userrequest.LoginUserRequest
+	var requestBody request.LoginUserRequest
 	var apiResponse response.APIResponse
 
 	if err := helper.DecodeAndValidateRequest(r, &requestBody, controller.validator); err != nil {

@@ -1,5 +1,7 @@
-# Use Ruby 3 as the base image
 FROM ruby:3.0
+
+# Create a user for the container
+RUN addgroup --system fluent && adduser --system --ingroup fluent fluent
 
 # Install Fluentd and required plugins
 RUN gem install fluentd -v 1.13.3 && \
@@ -15,8 +17,11 @@ WORKDIR /fluentd
 # Copy Fluentd configuration file
 COPY /fluentd/fluent.conf /fluentd/etc/fluent.conf
 
-# Expose Fluentd ports
-EXPOSE 24224 24224/udp
+# Set the user to run Fluentd
+USER fluent
+
+# Add a health check
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 CMD curl -f http://localhost:24224/api/plugins.json || exit 1
 
 # Run Fluentd with the custom configuration file
 CMD ["fluentd", "-c", "/fluentd/etc/fluent.conf"]

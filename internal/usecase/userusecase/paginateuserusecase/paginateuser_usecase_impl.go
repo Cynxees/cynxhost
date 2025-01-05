@@ -3,6 +3,7 @@ package paginateuserusecase
 import (
 	"context"
 	"cynxhost/internal/model/entity"
+	"cynxhost/internal/model/request"
 	"cynxhost/internal/repository/database"
 	"cynxhost/internal/usecase/userusecase"
 )
@@ -17,9 +18,9 @@ func New(tblUser database.TblUser) userusecase.PaginateUserUseCase {
 	}
 }
 
-func (usecase *PaginateUserUseCaseImpl) PaginateUser(ctx context.Context, page int, size int) (context.Context, []entity.TblUser, error) {
+func (usecase *PaginateUserUseCaseImpl) PaginateUser(ctx context.Context, paginateRequest request.PaginateRequest) (context.Context, []entity.TblUser, error) {
 
-	ctx, users, err := usecase.tblUser.PaginateUser(ctx, page, size)
+	ctx, users, err := usecase.tblUser.PaginateUser(ctx, paginateRequest)
 	if err != nil {
 		return ctx, nil, err
 	}
