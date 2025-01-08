@@ -3,7 +3,7 @@
     "address": "127.0.0.1",
     "port": 3000,
     "name": "CYNXHOST",
-    "debug": true,
+    "debug": false,
     "key": "andrewisacutiepatootie"
   },
   "router": {

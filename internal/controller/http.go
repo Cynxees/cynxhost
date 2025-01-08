@@ -3,10 +3,7 @@ package controller
 import (
 	"cynxhost/internal/app"
 	"cynxhost/internal/controller/servertemplatecontroller"
-	"cynxhost/internal/controller/usercontroller/checkusernamecontroller"
-	"cynxhost/internal/controller/usercontroller/loginusercontroller"
-	"cynxhost/internal/controller/usercontroller/paginateusercontroller"
-	"cynxhost/internal/controller/usercontroller/registerusercontroller"
+	"cynxhost/internal/controller/usercontroller"
 	"cynxhost/internal/middleware"
 	"errors"
 	"net/http"
@@ -40,17 +37,18 @@ func NewHttpServer(app *app.App) (*HttpServer, error) {
 		if requireAuth && !debug {
 			wrappedHandler = middleware.AuthMiddleware(app.Dependencies.JWTManager, wrappedHandler, debug)
 		}
-
 		return r.HandleFunc(routerPath+path, wrappedHandler).Methods("POST", "GET")
 	}
 
+	userController := usercontroller.New(app.Usecases.UserUseCase, app.Dependencies.Validator)
 	serverTemplateController := servertemplatecontroller.New(app.Usecases.ServerTemplateUseCase, app.Dependencies.Validator)
 
 	// User
-	handleRouterFunc("user/register", registerusercontroller.New(app.Usecases.RegisterUserUseCase, app.Dependencies.Validator).RegisterUser, false)
-	handleRouterFunc("user/login", loginusercontroller.New(app.Usecases.LoginUserUseCase, app.Dependencies.Validator).LoginUser, false)
-	handleRouterFunc("user/check-username", checkusernamecontroller.New(app.Usecases.CheckUsernameUseCase, app.Dependencies.Validator).CheckUsername, false)
-	handleRouterFunc("user/paginate", paginateusercontroller.New(app.Usecases.PaginateUserUseCase, app.Dependencies.Validator).PaginateUser, true)
+	handleRouterFunc("user/register", userController.RegisterUser, false)
+	handleRouterFunc("user/login", userController.LoginUser, false)
+	handleRouterFunc("user/check-username", userController.CheckUsername, false)
+	handleRouterFunc("user/paginate", userController.PaginateUser, true)
+	handleRouterFunc("user/profile", userController.GetProfile, true)
 
 	handleRouterFunc("server-template/paginate", serverTemplateController.PaginateServerTemplate, true)
 

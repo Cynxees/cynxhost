@@ -38,17 +38,17 @@ func (database *TblUserImpl) CheckUserExists(ctx context.Context, key string, va
 	return ctx, count > 0, nil
 }
 
-func (database *TblUserImpl) GetUser(ctx context.Context, key string, value string) (context.Context, entity.TblUser, error) {
+func (database *TblUserImpl) GetUser(ctx context.Context, key string, value string) (context.Context, *entity.TblUser, error) {
 	var user entity.TblUser
 	err := database.DB.WithContext(ctx).Where(key+" = ?", value).First(&user).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return ctx, user, nil
+			return ctx, nil, nil
 		}
-		return ctx, user, err
+		return ctx, &user, err
 	}
 
-	return ctx, user, nil
+	return ctx, &user, nil
 }
 
 func (database *TblUserImpl) PaginateUser(ctx context.Context, req request.PaginateRequest) (context.Context, []entity.TblUser, error) {

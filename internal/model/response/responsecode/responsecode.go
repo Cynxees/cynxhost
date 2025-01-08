@@ -3,30 +3,27 @@ package responsecode
 type ResponseCode string
 
 const (
-	// Success Codes
-	CodeSuccess ResponseCode = "SU"
-
-	// Validation Error
-	CodeValidationError ResponseCode = "VE"
-
-	// Authentication Error
+	CodeSuccess             ResponseCode = "SU"
+	CodeValidationError     ResponseCode = "VE"
 	CodeAuthenticationError ResponseCode = "AU"
+	CodeServerError         ResponseCode = "SE"
+	CodeInternalError       ResponseCode = "IE"
+	CodeNotAllowed          ResponseCode = "NA"
+	CodeNotFound            ResponseCode = "NF"
 
-	// Generic Server Error
-	CodeServerError ResponseCode = "SE"
-
-	// Internal Server Error
-	CodeInternalError ResponseCode = "IE"
-
-	// Internal Server Error
 	CodeTblServerTemplateError ResponseCode = "ST"
+	CodeTblUserError           ResponseCode = "TU"
 )
 
 var ResponseCodeNames = map[ResponseCode]string{
-	CodeSuccess:                "Success",
-	CodeValidationError:        "Validation Error",
-	CodeAuthenticationError:    "Authentication Error",
-	CodeServerError:            "Server Error",
-	CodeInternalError:          "Internal Error",
+	CodeSuccess:             "Success",
+	CodeValidationError:     "Validation Error",
+	CodeAuthenticationError: "Authentication Error",
+	CodeServerError:         "Server Error",
+	CodeInternalError:       "Internal Error",
+	CodeNotAllowed:          "Not Allowed",
+	CodeNotFound:            "Not Found",
+
 	CodeTblServerTemplateError: "TblServerTemplate Error",
+	CodeTblUserError:           "TblUser Error",
 }
