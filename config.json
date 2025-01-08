@@ -7,7 +7,7 @@
     "key": "andrewisacutiepatootie"
   },
   "router": {
-    "default": "/api/v1"
+    "default": "/api/v1/"
   },
   "database": {
     "mysql": {

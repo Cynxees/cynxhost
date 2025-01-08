@@ -2,9 +2,10 @@ package usecase
 
 import (
 	"context"
-	"cynxhost/internal/model/entity"
+	"cynxhost/internal/model/request"
+	"cynxhost/internal/model/response"
 )
 
 type ServerTemplateUseCase interface {
-	PaginateServerTemplate(ctx context.Context) (context.Context, []entity.TblServerTemplate, error)
+	PaginateServerTemplate(ctx context.Context, req request.PaginateRequest, resp *response.APIResponse)
 }

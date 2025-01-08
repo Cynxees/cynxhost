@@ -2,6 +2,7 @@ package controller
 
 import (
 	"cynxhost/internal/app"
+	"cynxhost/internal/controller/servertemplatecontroller"
 	"cynxhost/internal/controller/usercontroller/checkusernamecontroller"
 	"cynxhost/internal/controller/usercontroller/loginusercontroller"
 	"cynxhost/internal/controller/usercontroller/paginateusercontroller"
@@ -43,11 +44,15 @@ func NewHttpServer(app *app.App) (*HttpServer, error) {
 		return r.HandleFunc(routerPath+path, wrappedHandler).Methods("POST", "GET")
 	}
 
+	serverTemplateController := servertemplatecontroller.New(app.Usecases.ServerTemplateUseCase, app.Dependencies.Validator)
+
 	// User
-	handleRouterFunc("/register-user", registerusercontroller.New(app.Usecases.RegisterUserUseCase, app.Dependencies.Validator).RegisterUser, false)
-	handleRouterFunc("/login-user", loginusercontroller.New(app.Usecases.LoginUserUseCase, app.Dependencies.Validator).LoginUser, false)
-	handleRouterFunc("/check-username", checkusernamecontroller.New(app.Usecases.CheckUsernameUseCase, app.Dependencies.Validator).CheckUsername, false)
-	handleRouterFunc("/paginate-user", paginateusercontroller.New(app.Usecases.PaginateUserUseCase, app.Dependencies.Validator).PaginateUser, true)
+	handleRouterFunc("user/register", registerusercontroller.New(app.Usecases.RegisterUserUseCase, app.Dependencies.Validator).RegisterUser, false)
+	handleRouterFunc("user/login", loginusercontroller.New(app.Usecases.LoginUserUseCase, app.Dependencies.Validator).LoginUser, false)
+	handleRouterFunc("user/check-username", checkusernamecontroller.New(app.Usecases.CheckUsernameUseCase, app.Dependencies.Validator).CheckUsername, false)
+	handleRouterFunc("user/paginate", paginateusercontroller.New(app.Usecases.PaginateUserUseCase, app.Dependencies.Validator).PaginateUser, true)
+
+	handleRouterFunc("server-template/paginate", serverTemplateController.PaginateServerTemplate, true)
 
 	r.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)

@@ -17,12 +17,16 @@ const (
 
 	// Internal Server Error
 	CodeInternalError ResponseCode = "IE"
+
+	// Internal Server Error
+	CodeTblServerTemplateError ResponseCode = "ST"
 )
 
 var ResponseCodeNames = map[ResponseCode]string{
-	CodeSuccess:             "Success",
-	CodeValidationError:     "Validation Error",
-	CodeAuthenticationError: "Authentication Error",
-	CodeServerError:         "Server Error",
-	CodeInternalError:       "Internal Error",
+	CodeSuccess:                "Success",
+	CodeValidationError:        "Validation Error",
+	CodeAuthenticationError:    "Authentication Error",
+	CodeServerError:            "Server Error",
+	CodeInternalError:          "Internal Error",
+	CodeTblServerTemplateError: "TblServerTemplate Error",
 }
