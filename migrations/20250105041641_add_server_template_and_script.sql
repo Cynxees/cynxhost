@@ -36,6 +36,7 @@ ON UPDATE RESTRICT;
 
 -- +goose Down
 -- +goose StatementBegin
+ALTER TABLE tbl_server_template DROP FOREIGN KEY FK_SERVERTEMPLATE_SCRIPT;
 DROP TABLE IF EXISTS tbl_server_template;
 DROP TABLE IF EXISTS tbl_script;
 -- +goose StatementEnd

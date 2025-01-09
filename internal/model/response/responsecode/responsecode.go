@@ -11,8 +11,13 @@ const (
 	CodeNotAllowed          ResponseCode = "NA"
 	CodeNotFound            ResponseCode = "NF"
 
-	CodeTblServerTemplateError ResponseCode = "ST"
-	CodeTblUserError           ResponseCode = "TU"
+	CodeTblServerTemplateError ResponseCode = "TBLSTE"
+	CodeTblUserError           ResponseCode = "TBLUSR"
+	CodeTblInstanceError       ResponseCode = "TBLINT"
+	CodeTblInstanceTypeError   ResponseCode = "TBLITT"
+	CodeTblPersistentNodeError ResponseCode = "TBLPND"
+	CodeTblScriptError         ResponseCode = "TBLSCP"
+	CodeTblStorageError        ResponseCode = "TBLSTO"
 )
 
 var ResponseCodeNames = map[ResponseCode]string{
@@ -26,4 +31,9 @@ var ResponseCodeNames = map[ResponseCode]string{
 
 	CodeTblServerTemplateError: "TblServerTemplate Error",
 	CodeTblUserError:           "TblUser Error",
+	CodeTblInstanceError:       "TblInstance Error",
+	CodeTblInstanceTypeError:   "TblInstanceType Error",
+	CodeTblPersistentNodeError: "TblPersistentNode Error",
+	CodeTblScriptError:         "TblScript Error",
+	CodeTblStorageError:        "TblStorage Error",
 }
