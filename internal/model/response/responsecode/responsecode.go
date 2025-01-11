@@ -3,14 +3,20 @@ package responsecode
 type ResponseCode string
 
 const (
+
+	// Expected Error
 	CodeSuccess             ResponseCode = "SU"
 	CodeValidationError     ResponseCode = "VE"
 	CodeAuthenticationError ResponseCode = "AU"
-	CodeServerError         ResponseCode = "SE"
-	CodeInternalError       ResponseCode = "IE"
 	CodeNotAllowed          ResponseCode = "NA"
 	CodeNotFound            ResponseCode = "NF"
+	CodeInvalidCredentials  ResponseCode = "IC"
 
+	// Internal
+	CodeJwtError      ResponseCode = "JWTERR"
+	CodeInternalError ResponseCode = "IE"
+
+	// DB Error
 	CodeTblServerTemplateError ResponseCode = "TBLSTE"
 	CodeTblUserError           ResponseCode = "TBLUSR"
 	CodeTblInstanceError       ResponseCode = "TBLINT"
@@ -24,7 +30,6 @@ var ResponseCodeNames = map[ResponseCode]string{
 	CodeSuccess:             "Success",
 	CodeValidationError:     "Validation Error",
 	CodeAuthenticationError: "Authentication Error",
-	CodeServerError:         "Server Error",
 	CodeInternalError:       "Internal Error",
 	CodeNotAllowed:          "Not Allowed",
 	CodeNotFound:            "Not Found",

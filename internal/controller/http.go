@@ -33,7 +33,7 @@ func NewHttpServer(app *app.App) (*HttpServer, error) {
 
 	handleRouterFunc := func(path string, handler middleware.HandlerFuncWithHelper, requireAuth bool) *mux.Route {
 		wrappedHandler := middleware.WrapHandler(handler, debug)
-
+		
 		if requireAuth && !debug {
 			wrappedHandler = middleware.AuthMiddleware(app.Dependencies.JWTManager, wrappedHandler, debug)
 		}

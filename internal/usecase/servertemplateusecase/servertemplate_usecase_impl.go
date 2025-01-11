@@ -28,21 +28,8 @@ func (usecase *ServerTemplateUseCaseImpl) PaginateServerTemplate(ctx context.Con
 		return
 	}
 
-	var convertedTemplates []responsedata.ServerTemplate
-	for _, template := range serverTemplates {
-		convertedTemplates = append(convertedTemplates, responsedata.ServerTemplate{
-			Id:  template.Id,
-			Name: template.Name,
-			CreatedDate: template.CreatedDate,
-			UpdatedDate: template.UpdatedDate,
-			MinimumRam: template.MinimumRam,
-			MinimumCpu: template.MinimumCpu,
-			MinimumDisk: template.MinimumDisk,
-		})
-	}
-
 	resp.Code = responsecode.CodeSuccess
 	resp.Data = responsedata.PaginateServerTemplateResponseData{
-		ServerTemplates: convertedTemplates,
+		ServerTemplates: serverTemplates,
 	}
 }

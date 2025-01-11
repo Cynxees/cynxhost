@@ -67,7 +67,7 @@ func AuthMiddleware(JWTManager *dependencies.JWTManager, next http.HandlerFunc, 
 		}
 
 		// Inject user data into the request context
-		ctx := context.WithValue(r.Context(), constant.UserContextKey, contextmodel.User{
+		ctx := context.WithValue(r.Context(), constant.ContextKeyUser, contextmodel.User{
 			Id: userIdInt,
 		})
 

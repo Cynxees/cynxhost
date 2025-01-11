@@ -11,5 +11,5 @@ type UserUseCase interface {
 	CheckUsername(ctx context.Context, req request.CheckUsernameRequest, resp *response.APIResponse)
 	RegisterUser(ctx context.Context, req request.RegisterUserRequest, resp *response.APIResponse)
 	LoginUser(ctx context.Context, req request.LoginUserRequest, resp *response.APIResponse)
-	GetProfile(ctx context.Context, resp *response.APIResponse)
+	GetProfile(ctx context.Context, resp *response.APIResponse) context.Context
 }

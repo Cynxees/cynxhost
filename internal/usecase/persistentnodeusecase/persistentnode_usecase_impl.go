@@ -37,26 +37,8 @@ func (usecase *PersistentNodeUseCaseImpl) GetPersistentNodes(ctx context.Context
 		return
 	}
 
-	var convertedPersistentNodes []responsedata.PersistentNode
-
-	// TODO: setup entity so that there are level of data, like 0 to show all, 1 to hide sensitive data, 2 show brief data, 3 show only a little data
-	for _, persistentNode := range persistentNodes {
-		convertedPersistentNodes = append(convertedPersistentNodes, responsedata.PersistentNode{
-			Id:             persistentNode.Id,
-			Name:           persistentNode.Name,
-			CreatedDate:    persistentNode.CreatedDate,
-			UpdatedDate:    persistentNode.UpdatedDate,
-			Owner:          persistentNode.Owner,
-			ServerTemplate: persistentNode.ServerTemplate,
-			InstanceType:   persistentNode.InstanceType,
-			Instance:       persistentNode.Instance,
-			Storage:        persistentNode.Storage,
-			Status:         persistentNode.Status,
-		})
-	}
-
 	resp.Code = responsecode.CodeSuccess
 	resp.Data = responsedata.PaginatePersistentNodeResponseData{
-		PersistentNodes: convertedPersistentNodes,
+		PersistentNodes: persistentNodes,
 	}
 }

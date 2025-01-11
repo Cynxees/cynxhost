@@ -1,6 +1,7 @@
 package servertemplatecontroller
 
 import (
+	"context"
 	"cynxhost/internal/helper"
 	"cynxhost/internal/model/request"
 	"cynxhost/internal/model/response"
@@ -23,17 +24,19 @@ func New(serverTemplateUseCase usecase.ServerTemplateUseCase, validate *validato
 	}
 }
 
-func (controller *ServerTemplateController) PaginateServerTemplate(w http.ResponseWriter, r *http.Request) response.APIResponse {
+func (controller *ServerTemplateController) PaginateServerTemplate(w http.ResponseWriter, r *http.Request) (context.Context, response.APIResponse) {
 	var requestBody request.PaginateRequest
 	var apiResponse response.APIResponse
+
+	ctx := r.Context()
 
 	if err := helper.DecodeAndValidateRequest(r, &requestBody, controller.validator); err != nil {
 		apiResponse.Code = responsecode.CodeValidationError
 		apiResponse.Error = err.Error()
-		return apiResponse
+		return ctx, apiResponse
 	}
 
-	controller.uc.PaginateServerTemplate(r.Context(), requestBody, &apiResponse)
+	controller.uc.PaginateServerTemplate(ctx, requestBody, &apiResponse)
 
-	return apiResponse
+	return ctx, apiResponse
 }

@@ -28,19 +28,8 @@ func (usecase *InstanceTypeUseCaseImpl) PaginateInstanceType(ctx context.Context
 		return
 	}
 
-	var convertedInstanceTypes []responsedata.InstanceType
-	for _, instanceType := range instanceTypes {
-		convertedInstanceTypes = append(convertedInstanceTypes, responsedata.InstanceType{
-			Id:           instanceType.Id,
-			Name:         instanceType.Name,
-			VcpuCount:    instanceType.VcpuCount,
-			MemorySizeMb: instanceType.MemorySizeMb,
-			SellPrice:    instanceType.SellPrice,
-		})
-	}
-
 	resp.Code = responsecode.CodeSuccess
 	resp.Data = responsedata.PaginateInstanceTypeResponseData{
-		InstanceTypes: convertedInstanceTypes,
+		InstanceTypes: instanceTypes,
 	}
 }

@@ -2,6 +2,7 @@ package userusecase
 
 import (
 	"context"
+	"cynxhost/internal/constant"
 	"cynxhost/internal/dependencies"
 	"cynxhost/internal/helper"
 	"cynxhost/internal/model/entity"
@@ -34,21 +35,8 @@ func (usecase *UserUseCaseImpl) PaginateUser(ctx context.Context, req request.Pa
 		return
 	}
 
-	var convertedUsers []responsedata.User
-	for _, user := range users {
-		convertedUsers = append(convertedUsers, responsedata.User{
-			Id:          user.Id,
-			Username:    user.Username,
-			Coin:        user.Coin,
-			CreatedDate: user.CreatedDate,
-			UpdatedDate: user.UpdatedDate,
-		})
-	}
-
 	resp.Code = responsecode.CodeSuccess
-	resp.Data = responsedata.PaginateUserResponseData{
-		Users: convertedUsers,
-	}
+	resp.Data = users
 }
 
 func (usecase *UserUseCaseImpl) CheckUsername(ctx context.Context, req request.CheckUsernameRequest, resp *response.APIResponse) {
@@ -108,13 +96,13 @@ func (usecase *UserUseCaseImpl) LoginUser(ctx context.Context, req request.Login
 	}
 
 	if user.Password != req.Password {
-		resp.Code = responsecode.CodeAuthenticationError
+		resp.Code = responsecode.CodeInvalidCredentials
 		return
 	}
 
 	token, err := usecase.jwtManager.GenerateToken(user.Id)
 	if err != nil {
-		resp.Code = responsecode.CodeInternalError
+		resp.Code = responsecode.CodeJwtError
 		return
 	}
 
@@ -125,33 +113,30 @@ func (usecase *UserUseCaseImpl) LoginUser(ctx context.Context, req request.Login
 	}
 }
 
-func (usecase *UserUseCaseImpl) GetProfile(ctx context.Context, resp *response.APIResponse) {
+func (usecase *UserUseCaseImpl) GetProfile(ctx context.Context, resp *response.APIResponse) context.Context {
 
 	contextUser, ok := helper.GetUserFromContext(ctx)
 	if !ok {
 		resp.Code = responsecode.CodeAuthenticationError
 		resp.Error = "User not found in context"
-		return
+		return ctx
 	}
 
 	_, user, err := usecase.tblUser.GetUser(ctx, "id", strconv.Itoa(contextUser.Id))
 	if err != nil {
 		resp.Code = responsecode.CodeTblUserError
 		resp.Error = err.Error()
-		return
+		return ctx
 	}
 
 	if user == nil {
 		resp.Code = responsecode.CodeNotFound
-		return
+		return ctx
 	}
 
+	ctx = helper.SetVisibilityLevelToContext(ctx, constant.VisibilityLevelPrivate)
+
 	resp.Code = responsecode.CodeSuccess
-	resp.Data = responsedata.User{
-		Id:          user.Id,
-		Username:    user.Username,
-		Coin:        user.Coin,
-		CreatedDate: user.CreatedDate,
-		UpdatedDate: user.UpdatedDate,
-	}
+	resp.Data = user
+	return ctx
 }

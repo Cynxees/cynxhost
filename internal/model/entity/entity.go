@@ -3,61 +3,61 @@ package entity
 import "time"
 
 type TblUser struct {
-	Id          int       `gorm:"primaryKey"`
-	Username    string    `gorm:"size:255;not null;unique"`
-	Password    string    `gorm:"size:255;not null"`
-	Coin        int       `gorm:"default:0"`
-	CreatedDate time.Time `gorm:"autoCreateTime"`
-	UpdatedDate time.Time `gorm:"autoUpdateTime"`
+	Id          int       `gorm:"primaryKey" visibility:"1"`
+	Username    string    `gorm:"size:255;not null;unique" visibility:"2"`
+	Password    string    `gorm:"size:255;not null" visibility:"10"`
+	Coin        int       `gorm:"default:0" visibility:"2"`
+	CreatedDate time.Time `gorm:"autoCreateTime" visibility:"1"`
+	UpdatedDate time.Time `gorm:"autoUpdateTime" visibility:"1"`
 }
 
 type TblScript struct {
-	Id             int       `gorm:"primaryKey"`
-	CreatedDate    time.Time `gorm:"autoCreateTime"`
-	UpdatedDate    time.Time `gorm:"autoUpdateTime"`
-	Name           string    `gorm:"size:255;not null"`
-	Variables      string    `gorm:"type:json;not null"`
-	SetupScript    string    `gorm:"type:text;not null"`
-	StartScript    string    `gorm:"type:text;not null"`
-	StopScript     string    `gorm:"type:text;not null"`
-	ShutdownScript string    `gorm:"type:text;not null"`
+	Id             int       `gorm:"primaryKey" visibility:"1"`
+	CreatedDate    time.Time `gorm:"autoCreateTime" visibility:"1"`
+	UpdatedDate    time.Time `gorm:"autoUpdateTime" visibility:"1"`
+	Name           string    `gorm:"size:255;not null" visibility:"1"`
+	Variables      string    `gorm:"type:json;not null" visibility:"2"`
+	SetupScript    string    `gorm:"type:text;not null" visibility:"2"`
+	StartScript    string    `gorm:"type:text;not null" visibility:"2"`
+	StopScript     string    `gorm:"type:text;not null" visibility:"2"`
+	ShutdownScript string    `gorm:"type:text;not null" visibility:"2"`
 }
 
 type TblServerTemplate struct {
-	Id          int       `gorm:"primaryKey"`
-	CreatedDate time.Time `gorm:"autoCreateTime"`
-	UpdatedDate time.Time `gorm:"autoUpdateTime"`
-	Name        string    `gorm:"size:255;not null"`
-	MinimumRam  int       `gorm:"not null"`
-	MinimumCpu  int       `gorm:"not null"`
-	MinimumDisk int       `gorm:"not null"`
-	ScriptId    int       `gorm:"not null"`
-	Script      TblScript `gorm:"foreignKey:ScriptId"`
+	Id          int       `gorm:"primaryKey" visibility:"1"`
+	CreatedDate time.Time `gorm:"autoCreateTime" visibility:"1"`
+	UpdatedDate time.Time `gorm:"autoUpdateTime" visibility:"1"`
+	Name        string    `gorm:"size:255;not null" visibility:"1"`
+	MinimumRam  int       `gorm:"not null" visibility:"1"`
+	MinimumCpu  int       `gorm:"not null" visibility:"1"`
+	MinimumDisk int       `gorm:"not null" visibility:"1"`
+	ScriptId    int       `gorm:"not null" visibility:"1"`
+	Script      TblScript `gorm:"foreignKey:ScriptId" visibility:"1"`
 }
 
 type TblInstanceType struct {
-	Id           int       `gorm:"primaryKey"`
-	CreatedDate  time.Time `gorm:"autoCreateTime"`
-	UpdatedDate  time.Time `gorm:"autoUpdateTime"`
-	Name         string    `gorm:"size:255;not null"`
-	VcpuCount    int       `gorm:"not null"`
-	MemorySizeMb int       `gorm:"not null"`
-	SpotPrice    float64   `gorm:"type:decimal(10,2);not null"`
-	SellPrice    float64   `gorm:"type:decimal(10,2);not null"`
-	Status       string    `gorm:"type:enum('ACTIVE', 'INACTIVE', 'HIDDEN');not null"`
+	Id           int       `gorm:"primaryKey" visibility:"1"`
+	CreatedDate  time.Time `gorm:"autoCreateTime" visibility:"1"`
+	UpdatedDate  time.Time `gorm:"autoUpdateTime" visibility:"1"`
+	Name         string    `gorm:"size:255;not null" visibility:"1"`
+	VcpuCount    int       `gorm:"not null" visibility:"1"`
+	MemorySizeMb int       `gorm:"not null" visibility:"1"`
+	SpotPrice    float64   `gorm:"type:decimal(10,2);not null" visibility:"10"`
+	SellPrice    float64   `gorm:"type:decimal(10,2);not null" visibility:"1"`
+	Status       string    `gorm:"type:enum('ACTIVE', 'INACTIVE', 'HIDDEN');not null" visibility:"1"`
 }
 
 type TblInstance struct {
-	Id             int             `gorm:"primaryKey"`
-	CreatedDate    time.Time       `gorm:"autoCreateTime"`
-	UpdatedDate    time.Time       `gorm:"autoUpdateTime"`
-	Name           string          `gorm:"size:255;not null"`
-	AwsInstanceId  string          `gorm:"size:255;not null"`
-	PublicIp       string          `gorm:"size:255;not null"`
-	PrivateIp      string          `gorm:"size:255;not null"`
-	InstanceTypeId int             `gorm:"not null"`
-	Status         string          `gorm:"size:255;not null"`
-	InstanceType   TblInstanceType `gorm:"foreignKey:InstanceTypeId"`
+	Id             int             `gorm:"primaryKey" visibility:"1"`
+	CreatedDate    time.Time       `gorm:"autoCreateTime" visibility:"1"`
+	UpdatedDate    time.Time       `gorm:"autoUpdateTime" visibility:"1"`
+	Name           string          `gorm:"size:255;not null" visibility:"1"`
+	AwsInstanceId  string          `gorm:"size:255;not null" visibility:"10"`
+	PublicIp       string          `gorm:"size:255;not null" visibility:"2"`
+	PrivateIp      string          `gorm:"size:255;not null" visibility:"10"`
+	InstanceTypeId int             `gorm:"not null" visibility:"1"`
+	Status         string          `gorm:"size:255;not null" visibility:"1"`
+	InstanceType   TblInstanceType `gorm:"foreignKey:InstanceTypeId" visibility:"1"`
 }
 
 type TblStorage struct {
