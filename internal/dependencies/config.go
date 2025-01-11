@@ -10,11 +10,12 @@ import (
 
 type Config struct {
 	App struct {
-		Name    string `mapstructure:"name"`
-		Address string `mapstructure:"address"`
-		Key     string `mapstructure:"key"`
-		Port    int    `mapstructure:"port"`
-		Debug   bool   `mapstructure:"debug"`
+		Name      string `mapstructure:"name"`
+		Address   string `mapstructure:"address"`
+		PrivateIp string `mapstructure:"privateIp"`
+		Key       string `mapstructure:"key"`
+		Port      int    `mapstructure:"port"`
+		Debug     bool   `mapstructure:"debug"`
 	} `mapstructure:"app"`
 
 	Router struct {

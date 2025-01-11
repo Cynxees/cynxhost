@@ -26,3 +26,9 @@ const (
 	PersistentNodeStatusStopping     PersistentNodeStatus = "STOPPING"
 	PersistentNodeStatusShuttingDown PersistentNodeStatus = "SHUTTING_DOWN"
 )
+
+const (
+	InstanceStatusCreate   InstanceStatus = "CREATING"
+	InstanceStatusActive   InstanceStatus = "ACTIVE"
+	InstanceStatusInactive InstanceStatus = "INACTIVE"
+)

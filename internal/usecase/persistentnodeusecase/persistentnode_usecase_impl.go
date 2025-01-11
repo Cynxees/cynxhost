@@ -13,7 +13,9 @@ import (
 	"cynxhost/internal/model/response/responsedata"
 	"cynxhost/internal/repository/database"
 	"cynxhost/internal/usecase"
+	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -27,23 +29,25 @@ type PersistentNodeUseCaseImpl struct {
 	tblInstance       database.TblInstance
 	tblInstanceType   database.TblInstanceType
 	tblStorage        database.TblStorage
-	tblScript         database.TblServerTemplate
+	tblServerTemplate database.TblServerTemplate
 
 	awsClient *dependencies.AWSClient
 	log       *logrus.Logger
+	config    *dependencies.Config
 }
 
-func New(tblPersistentNode database.TblPersistentNode, tblInstance database.TblInstance, tblInstanceType database.TblInstanceType, tblStorage database.TblStorage, tblScript database.TblServerTemplate, awsClient *dependencies.AWSClient, logger *logrus.Logger) usecase.PersistentNodeUseCase {
+func New(tblPersistentNode database.TblPersistentNode, tblInstance database.TblInstance, tblInstanceType database.TblInstanceType, tblStorage database.TblStorage, tblServerTemplate database.TblServerTemplate, awsClient *dependencies.AWSClient, logger *logrus.Logger, config *dependencies.Config) usecase.PersistentNodeUseCase {
 
 	return &PersistentNodeUseCaseImpl{
 		tblPersistentNode: tblPersistentNode,
 		tblStorage:        tblStorage,
-		tblScript:         tblScript,
+		tblServerTemplate: tblServerTemplate,
 		tblInstance:       tblInstance,
 		tblInstanceType:   tblInstanceType,
 
 		awsClient: awsClient,
 		log:       logger,
+		config:    config,
 	}
 }
 
@@ -121,9 +125,29 @@ func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Conte
 		return ctx
 	}
 
+	userDataVariables := map[string]string{
+		"LAUNCH_SUCCESS_CALLBACK_URL": fmt.Sprintf("http://%s/api/v1/persistent-node/callback/launch", usecase.config.App.PrivateIp),
+		"LAUNCH_SUCCESS_TYPE":         string(types.LaunchCallbackPersistentNodeTypeInitialLaunch),
+		"SETUP_SUCCESS_CALLBACK_URL":  fmt.Sprintf("http://%s/api/v1/persistent-node/callback/update-status", usecase.config.App.PrivateIp),
+		"SETUP_SUCCESS_TYPE":          string(types.SetupSuccessCallbackPersistentNodeType),
+	}
+
+	userData, err := helper.ReplacePlaceholders(param.StaticParam.ParamAwsNodeScript.InitialLaunchScript, userDataVariables)
+	if err != nil {
+		resp.Code = responsecode.CodeInternalError
+		resp.Error = err.Error()
+		return ctx
+	}
+	usecase.log.Infoln("User data: ", userData)
+	encodedUserData := base64.StdEncoding.EncodeToString([]byte(userData))
+
+	usecase.log.Infoln("encoded user data: ", encodedUserData)
 	ec2RunInstanceInput := &ec2.RunInstancesInput{
 		MinCount: aws.Int32(1),
 		MaxCount: aws.Int32(1),
+		IamInstanceProfile: &awstypes.IamInstanceProfileSpecification{
+			Arn: aws.String("arn:aws:iam::242201306378:instance-profile/cynxhost-node-iam"),
+		},
 		BlockDeviceMappings: []awstypes.BlockDeviceMapping{
 			{
 				DeviceName: aws.String("/dev/sda1"), // The device name, typically /dev/sda1 for the root volume
@@ -131,6 +155,14 @@ func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Conte
 					DeleteOnTermination: aws.Bool(true),         // Ensures that the volume is deleted when the instance is terminated
 					VolumeSize:          aws.Int32(8),           // Set the volume size in GiB (e.g., 20 GiB)
 					VolumeType:          awstypes.VolumeTypeGp2, // You can also specify the volume type, such as gp2 (General Purpose SSD)
+				},
+			},
+			{
+				DeviceName: aws.String("/dev/sdb"),
+				Ebs: &awstypes.EbsBlockDevice{
+					DeleteOnTermination: aws.Bool(false),
+					VolumeSize:          aws.Int32(8),
+					VolumeType:          awstypes.VolumeTypeGp2,
 				},
 			},
 		},
@@ -152,6 +184,7 @@ func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Conte
 				},
 			},
 		},
+		UserData: aws.String(encodedUserData),
 	}
 
 	// Create instance in aws
@@ -188,6 +221,7 @@ func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Conte
 		AwsInstanceId:  *createdEc2.InstanceId,
 		PrivateIp:      *createdEc2.PrivateIpAddress,
 		InstanceTypeId: req.InstanceTypeId,
+		Status:         types.InstanceStatusCreate,
 	}
 
 	ctx, storageId, err := usecase.tblStorage.CreateStorage(ctx, storage)

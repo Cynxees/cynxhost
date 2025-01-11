@@ -11,4 +11,8 @@ type PersistentNodeUseCase interface {
 	GetPersistentNodes(ctx context.Context, resp *response.APIResponse)
 	GetPersistentNode(ctx context.Context, req request.GetPersistentNodeRequest, resp *response.APIResponse) context.Context
 	RunPersistentNodeScript(ctx context.Context, req request.RunPersistentNodeScriptRequest, resp *response.APIResponse)
+
+	// Callback
+	LaunchCallbackPersistentNode(ctx context.Context, req request.LaunchCallbackPersistentNodeRequest, resp *response.APIResponse) context.Context
+	StatusCallbackPersistentNode(ctx context.Context, req request.StatusCallbackPersistentNodeRequest, resp *response.APIResponse) context.Context
 }

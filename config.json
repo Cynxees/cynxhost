@@ -1,5 +1,6 @@
 {
   "app": {
+    "privateIp": "172.31.31.155:3000",
     "address": "0.0.0.0",
     "port": 3000,
     "name": "CYNXHOST",

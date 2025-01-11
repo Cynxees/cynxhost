@@ -43,3 +43,41 @@ func (controller *PersistentNodeController) CreatePersistentNode(w http.Response
 
 	return ctx, apiResponse
 }
+
+func (controller *PersistentNodeController) LaunchCallbackPersistentNode(w http.ResponseWriter, r *http.Request) (context.Context, response.APIResponse) {
+	var requestBody request.LaunchCallbackPersistentNodeRequest
+	var apiResponse response.APIResponse
+
+	ctx := r.Context()
+
+	requestBody.ClientIp = helper.GetClientIP(r)
+
+	if err := helper.DecodeAndValidateRequest(r, &requestBody, controller.validator); err != nil {
+		apiResponse.Code = responsecode.CodeValidationError
+		apiResponse.Error = err.Error()
+		return ctx, apiResponse
+	}
+
+	ctx = controller.persistentNodeUsecase.LaunchCallbackPersistentNode(ctx, requestBody, &apiResponse)
+
+	return ctx, apiResponse
+}
+
+func (controller *PersistentNodeController) StatusCallbackPersistentNode(w http.ResponseWriter, r *http.Request) (context.Context, response.APIResponse) {
+	var requestBody request.StatusCallbackPersistentNodeRequest
+	var apiResponse response.APIResponse
+
+	ctx := r.Context()
+
+	requestBody.ClientIp = helper.GetClientIP(r)
+
+	if err := helper.DecodeAndValidateRequest(r, &requestBody, controller.validator); err != nil {
+		apiResponse.Code = responsecode.CodeValidationError
+		apiResponse.Error = err.Error()
+		return ctx, apiResponse
+	}
+
+	ctx = controller.persistentNodeUsecase.StatusCallbackPersistentNode(ctx, requestBody, &apiResponse)
+
+	return ctx, apiResponse
+}

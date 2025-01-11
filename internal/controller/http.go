@@ -29,6 +29,7 @@ func NewHttpServer(app *app.App) (*HttpServer, error) {
 	})
 
 	r := mux.NewRouter()
+	r.Use(middleware.LoggingMiddleware)
 	routerPath := app.Dependencies.Config.Router.Default
 	debug := app.Dependencies.Config.App.Debug
 
@@ -57,6 +58,10 @@ func NewHttpServer(app *app.App) (*HttpServer, error) {
 
 	// Persistent Node
 	handleRouterFunc("persistent-node/create", persistentNodeController.CreatePersistentNode, true)
+
+	// Callbacks
+	handleRouterFunc("persistent-node/callback/launch", persistentNodeController.LaunchCallbackPersistentNode, false)
+	handleRouterFunc("persistent-node/callback/update-status", persistentNodeController.StatusCallbackPersistentNode, false)
 
 	r.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)

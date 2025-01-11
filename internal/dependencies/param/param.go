@@ -11,7 +11,8 @@ import (
 )
 
 type params struct {
-	ParamAwsNodeId param.ParamAwsNodeId
+	ParamAwsNodeId     param.ParamAwsNodeId
+	ParamAwsNodeScript param.ParamAwsNodeScript
 }
 
 var StaticParam params
@@ -26,6 +27,10 @@ func getParamDetailList(staticParam *params) map[string]paramDetail {
 		"AWS_NODE_ID": {
 			IsObject:             true,
 			ParamObjectReference: &staticParam.ParamAwsNodeId,
+		},
+		"AWS_NODE_SCRIPT": {
+			IsObject:             true,
+			ParamObjectReference: &staticParam.ParamAwsNodeScript,
 		},
 	}
 }
@@ -48,9 +53,8 @@ func SetupStaticParam(tblParam database.TblParameter, log *logrus.Logger) {
 			log.Infoln("Error getting parameter: " + err.Error())
 			continue
 		}
-		
+
 		for _, tblParam := range tblParams {
-			log.Infoln("Setting parameter " + tblParam.Id + " to " + tblParam.Value)
 			paramDetail := paramDetailList[tblParam.Id]
 			if paramDetail.IsObject {
 				err = json.Unmarshal([]byte(tblParam.Value), &paramDetail.ParamObjectReference)

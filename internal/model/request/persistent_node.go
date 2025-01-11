@@ -8,10 +8,19 @@ type CreatePersistentNodeRequest struct {
 }
 
 type LaunchCallbackPersistentNodeRequest struct {
-	PublicIp      string `json:"public_ip" validate:"required"`
+	ClientIp string `json:"requester_ip" validate:"required"`
+
 	AwsInstanceId string `json:"aws_instance_id" validate:"required"`
-	StorageId     int    `json:"storage_id" validate:"required"`
+	PublicIp      string `json:"public_ip" validate:"required"`
+	EbsVolumeId   string `json:"ebs_volume_id" validate:"required"`
 	Type          string `json:"type" validate:"required"`
+}
+
+type StatusCallbackPersistentNodeRequest struct {
+	ClientIp string `json:"requester_ip" validate:"required"`
+
+	PersistentNodeId int    `json:"persistent_node_id" validate:"required"`
+	Type             string `json:"type" validate:"required"`
 }
 
 type PersistentNodeScript string

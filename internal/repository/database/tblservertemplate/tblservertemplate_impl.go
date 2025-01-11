@@ -29,7 +29,7 @@ func (database *TblServerTemplateImpl) CreateServerTemplate(ctx context.Context,
 
 func (database *TblServerTemplateImpl) GetServerTemplate(ctx context.Context, key string, value string) (context.Context, entity.TblServerTemplate, error) {
 	var serverTemplate entity.TblServerTemplate
-	err := database.DB.WithContext(ctx).Where(key+" = ?", value).First(&serverTemplate).Error
+	err := database.DB.WithContext(ctx).Preload("Script").Where(key+" = ?", value).First(&serverTemplate).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return ctx, serverTemplate, nil

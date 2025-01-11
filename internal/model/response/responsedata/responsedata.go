@@ -5,31 +5,31 @@ import (
 )
 
 type PaginateServerTemplateResponseData struct {
-	ServerTemplates []entity.TblServerTemplate `json:"server_templates"`
+	ServerTemplates []entity.TblServerTemplate
 }
 
 type PaginateUserResponseData struct {
-	Users []entity.TblUser `json:"users"`
+	Users []entity.TblUser
 }
 
 type AuthResponseData struct {
-	AccessToken string `json:"access_token"`
-	TokenType   string `json:"token_type"`
+	AccessToken string
+	TokenType   string
 }
 
 type GetAllPersistentNodeResponseData struct {
-	PersistentNodes []entity.TblPersistentNode `json:"persistent_nodes"`
+	PersistentNodes []entity.TblPersistentNode
 }
 
 type PaginatePersistentNodeResponseData struct {
-	PersistentNodes []entity.TblPersistentNode `json:"persistent_nodes"`
+	PersistentNodes []entity.TblPersistentNode
 }
 
 type PaginateInstanceTypeResponseData struct {
-	InstanceTypes []entity.TblInstanceType `json:"instance_types"`
+	InstanceTypes []entity.TblInstanceType
 }
 
 type LaunchCallbackPersistentNodeResponseData struct {
-	Script entity.TblScript `json:"script"`
-	Type   string           `json:"type"`
+	PersistentNodeId int
+	Script           string
 }

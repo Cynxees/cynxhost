@@ -18,6 +18,6 @@ func NewUseCases(repos *Repos, dependencies *Dependencies) *UseCases {
 	return &UseCases{
 		UserUseCase:           userusecase.New(repos.TblUser, repos.JWTManager),
 		ServerTemplateUseCase: servertemplateusecase.New(repos.TblServerTemplate),
-		PersistentNodeUseCase: persistentnodeusecase.New(repos.TblPersistentNode, repos.TblInstance, repos.TblInstanceType, repos.TblStorage, repos.TblServerTemplate, dependencies.AWSClient, dependencies.Logger),
+		PersistentNodeUseCase: persistentnodeusecase.New(repos.TblPersistentNode, repos.TblInstance, repos.TblInstanceType, repos.TblStorage, repos.TblServerTemplate, dependencies.AWSClient, dependencies.Logger, dependencies.Config),
 	}
 }
