@@ -2,7 +2,7 @@ package request
 
 type CreatePersistentNodeRequest struct {
 	ServerTemplateId int    `json:"server_template_id" validate:"required"`
-	StorageSize      int    `json:"storage_size" validate:"required"`
+	StorageSizeMb    int    `json:"storage_size_mb" validate:"required"`
 	InstanceTypeId   int    `json:"instance_type_id" validate:"required"`
 	Name             string `json:"name" validate:"required"`
 }

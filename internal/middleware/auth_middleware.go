@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"context"
-	"cynxhost/internal/constant"
+	"cynxhost/internal/constant/types"
 	"cynxhost/internal/dependencies"
 	"cynxhost/internal/helper"
 	contextmodel "cynxhost/internal/model/context"
@@ -67,7 +67,7 @@ func AuthMiddleware(JWTManager *dependencies.JWTManager, next http.HandlerFunc, 
 		}
 
 		// Inject user data into the request context
-		ctx := context.WithValue(r.Context(), constant.ContextKeyUser, contextmodel.User{
+		ctx := context.WithValue(r.Context(), types.ContextKeyUser, contextmodel.User{
 			Id: userIdInt,
 		})
 

@@ -11,6 +11,7 @@ const (
 	CodeNotAllowed          ResponseCode = "NA"
 	CodeNotFound            ResponseCode = "NF"
 	CodeInvalidCredentials  ResponseCode = "IC"
+	CodeForbidden           ResponseCode = "FB"
 
 	// Internal
 	CodeJwtError      ResponseCode = "JWTERR"

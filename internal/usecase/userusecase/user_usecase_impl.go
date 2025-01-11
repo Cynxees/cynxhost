@@ -2,7 +2,7 @@ package userusecase
 
 import (
 	"context"
-	"cynxhost/internal/constant"
+	"cynxhost/internal/constant/types"
 	"cynxhost/internal/dependencies"
 	"cynxhost/internal/helper"
 	"cynxhost/internal/model/entity"
@@ -134,7 +134,7 @@ func (usecase *UserUseCaseImpl) GetProfile(ctx context.Context, resp *response.A
 		return ctx
 	}
 
-	ctx = helper.SetVisibilityLevelToContext(ctx, constant.VisibilityLevelPrivate)
+	ctx = helper.SetVisibilityLevelToContext(ctx, types.VisibilityLevelPrivate)
 
 	resp.Code = responsecode.CodeSuccess
 	resp.Data = user

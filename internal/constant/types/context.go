@@ -1,4 +1,4 @@
-package constant
+package types
 
 type key int
 

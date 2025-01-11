@@ -1,6 +1,9 @@
 package entity
 
-import "time"
+import (
+	"cynxhost/internal/constant/types"
+	"time"
+)
 
 type TblUser struct {
 	Id          int       `gorm:"primaryKey" visibility:"1"`
@@ -48,27 +51,27 @@ type TblInstanceType struct {
 }
 
 type TblInstance struct {
-	Id             int             `gorm:"primaryKey" visibility:"1"`
-	CreatedDate    time.Time       `gorm:"autoCreateTime" visibility:"1"`
-	UpdatedDate    time.Time       `gorm:"autoUpdateTime" visibility:"1"`
-	Name           string          `gorm:"size:255;not null" visibility:"1"`
-	AwsInstanceId  string          `gorm:"size:255;not null" visibility:"10"`
-	PublicIp       string          `gorm:"size:255;not null" visibility:"2"`
-	PrivateIp      string          `gorm:"size:255;not null" visibility:"10"`
-	InstanceTypeId int             `gorm:"not null" visibility:"1"`
-	Status         string          `gorm:"size:255;not null" visibility:"1"`
-	InstanceType   TblInstanceType `gorm:"foreignKey:InstanceTypeId" visibility:"1"`
+	Id             int                 `gorm:"primaryKey" visibility:"1"`
+	CreatedDate    time.Time           `gorm:"autoCreateTime" visibility:"1"`
+	UpdatedDate    time.Time           `gorm:"autoUpdateTime" visibility:"1"`
+	Name           string              `gorm:"size:255;not null" visibility:"1"`
+	AwsInstanceId  string              `gorm:"size:255;not null" visibility:"10"`
+	PublicIp       string              `gorm:"size:255;not null" visibility:"2"`
+	PrivateIp      string              `gorm:"size:255;not null" visibility:"10"`
+	InstanceTypeId int                 `gorm:"not null" visibility:"1"`
+	Status         types.StorageStatus `gorm:"size:255;not null" visibility:"1"`
+	InstanceType   TblInstanceType     `gorm:"foreignKey:InstanceTypeId" visibility:"1"`
 }
 
 type TblStorage struct {
-	Id               int       `gorm:"primaryKey"`
-	CreatedDate      time.Time `gorm:"autoCreateTime"`
-	UpdatedDate      time.Time `gorm:"autoUpdateTime"`
-	Name             string    `gorm:"size:255;not null"`
-	SizeMb           int       `gorm:"not null"`
-	AwsEbsId         string    `gorm:"size:255"`
-	AwsEbsSnapshotId string    `gorm:"size:255"`
-	Status           string    `gorm:"size:255;not null"`
+	Id               int                 `gorm:"primaryKey"`
+	CreatedDate      time.Time           `gorm:"autoCreateTime"`
+	UpdatedDate      time.Time           `gorm:"autoUpdateTime"`
+	Name             string              `gorm:"size:255;not null"`
+	SizeMb           int                 `gorm:"not null"`
+	AwsEbsId         string              `gorm:"size:255" visibility:"10"`
+	AwsEbsSnapshotId string              `gorm:"size:255" visibility:"10"`
+	Status           types.StorageStatus `gorm:"size:255;not null"`
 }
 
 type TblPersistentNode struct {
