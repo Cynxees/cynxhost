@@ -28,3 +28,8 @@ type PaginatePersistentNodeResponseData struct {
 type PaginateInstanceTypeResponseData struct {
 	InstanceTypes []entity.TblInstanceType `json:"instance_types"`
 }
+
+type LaunchCallbackPersistentNodeResponseData struct {
+	Script entity.TblScript `json:"script"`
+	Type   string           `json:"type"`
+}

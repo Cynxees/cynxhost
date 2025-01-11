@@ -7,6 +7,13 @@ type CreatePersistentNodeRequest struct {
 	Name             string `json:"name" validate:"required"`
 }
 
+type LaunchCallbackPersistentNodeRequest struct {
+	PublicIp      string `json:"public_ip" validate:"required"`
+	AwsInstanceId string `json:"aws_instance_id" validate:"required"`
+	StorageId     int    `json:"storage_id" validate:"required"`
+	Type          string `json:"type" validate:"required"`
+}
+
 type PersistentNodeScript string
 
 const (
