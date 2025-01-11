@@ -49,6 +49,7 @@ CREATE TABLE tbl_persistent_node (
     name VARCHAR(255) NOT NULL,
     owner_id INT NOT NULL,
     server_template_id INT NOT NULL,
+    instance_id INT,
     instance_type_id INT NOT NULL,
     storage_id INT NOT NULL,
     status VARCHAR(255) NOT NULL
@@ -95,10 +96,19 @@ ON DELETE RESTRICT
 ON UPDATE RESTRICT;
 -- +goose StatementEnd
 
+-- +goose StatementBegin
+ALTER TABLE tbl_persistent_node
+ADD CONSTRAINT FK_PERSISTENTNODE_INSTANCE
+FOREIGN KEY (instance_id) REFERENCES tbl_instance(id)
+ON DELETE RESTRICT
+ON UPDATE RESTRICT;
+-- +goose StatementEnd
+
 -- +goose Down
 -- +goose StatementBegin
 ALTER TABLE tbl_persistent_node DROP FOREIGN KEY FK_PERSISTENTNODE_USER;
 ALTER TABLE tbl_persistent_node DROP FOREIGN KEY FK_PERSISTENTNODE_SERVERTEMPLATE;
+ALTER TABLE tbl_persistent_node DROP FOREIGN KEY FK_PERSISTENTNODE_INSTANCE;
 ALTER TABLE tbl_persistent_node DROP FOREIGN KEY FK_PERSISTENTNODE_INSTANCETYPE;
 ALTER TABLE tbl_persistent_node DROP FOREIGN KEY FK_PERSISTENTNODE_STORAGE;
 ALTER TABLE tbl_instance DROP FOREIGN KEY FK_INSTANCE_INSTANCETYPE;

@@ -4,6 +4,7 @@ import (
 	"context"
 	"cynxhost/internal/constant/types"
 	"cynxhost/internal/dependencies"
+	"cynxhost/internal/dependencies/param"
 	"cynxhost/internal/helper"
 	"cynxhost/internal/model/entity"
 	"cynxhost/internal/model/request"
@@ -12,25 +13,37 @@ import (
 	"cynxhost/internal/model/response/responsedata"
 	"cynxhost/internal/repository/database"
 	"cynxhost/internal/usecase"
+	"encoding/json"
 	"strconv"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	awstypes "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	"github.com/sirupsen/logrus"
 )
 
 type PersistentNodeUseCaseImpl struct {
 	tblPersistentNode database.TblPersistentNode
+	tblInstance       database.TblInstance
+	tblInstanceType   database.TblInstanceType
 	tblStorage        database.TblStorage
 	tblScript         database.TblServerTemplate
 
 	awsClient *dependencies.AWSClient
+	log       *logrus.Logger
 }
 
-func New(tblPersistentNode database.TblPersistentNode, tblStorage database.TblStorage, tblScript database.TblServerTemplate, awsClient *dependencies.AWSClient) usecase.PersistentNodeUseCase {
+func New(tblPersistentNode database.TblPersistentNode, tblInstance database.TblInstance, tblInstanceType database.TblInstanceType, tblStorage database.TblStorage, tblScript database.TblServerTemplate, awsClient *dependencies.AWSClient, logger *logrus.Logger) usecase.PersistentNodeUseCase {
 
 	return &PersistentNodeUseCaseImpl{
 		tblPersistentNode: tblPersistentNode,
 		tblStorage:        tblStorage,
 		tblScript:         tblScript,
+		tblInstance:       tblInstance,
+		tblInstanceType:   tblInstanceType,
 
 		awsClient: awsClient,
+		log:       logger,
 	}
 }
 
@@ -91,36 +104,124 @@ func (usecase *PersistentNodeUseCaseImpl) GetPersistentNode(ctx context.Context,
 	return ctx
 }
 
-func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Context, req request.CreatePersistentNodeRequest, resp *response.APIResponse) {
+func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Context, req request.CreatePersistentNodeRequest, resp *response.APIResponse) context.Context {
 
 	contextUser, ok := helper.GetUserFromContext(ctx)
 	if !ok {
 		resp.Code = responsecode.CodeAuthenticationError
 		resp.Error = "User not found in context"
-		return
+		return ctx
 	}
 
-	// storage := entity.TblStorage{
-	// 	Name:   req.Name,
-	// 	SizeMb: req.StorageSizeMb,
-	// 	Status: types.StorageStatusNew,
-	// }
+	// Get instance type
+	_, instanceType, err := usecase.tblInstanceType.GetInstanceType(ctx, "id", strconv.Itoa(req.InstanceTypeId))
+	if err != nil {
+		resp.Code = responsecode.CodeTblInstanceTypeError
+		resp.Error = err.Error()
+		return ctx
+	}
+
+	ec2RunInstanceInput := &ec2.RunInstancesInput{
+		MinCount: aws.Int32(1),
+		MaxCount: aws.Int32(1),
+		BlockDeviceMappings: []awstypes.BlockDeviceMapping{
+			{
+				DeviceName: aws.String("/dev/sda1"), // The device name, typically /dev/sda1 for the root volume
+				Ebs: &awstypes.EbsBlockDevice{
+					DeleteOnTermination: aws.Bool(true),         // Ensures that the volume is deleted when the instance is terminated
+					VolumeSize:          aws.Int32(8),           // Set the volume size in GiB (e.g., 20 GiB)
+					VolumeType:          awstypes.VolumeTypeGp2, // You can also specify the volume type, such as gp2 (General Purpose SSD)
+				},
+			},
+		},
+		ImageId:      aws.String(param.StaticParam.ParamAwsNodeId.AmiId),
+		KeyName:      aws.String(param.StaticParam.ParamAwsNodeId.KeyPairName),
+		InstanceType: awstypes.InstanceType(instanceType.Name),
+		InstanceMarketOptions: &awstypes.InstanceMarketOptionsRequest{
+			MarketType: awstypes.MarketTypeSpot,
+			SpotOptions: &awstypes.SpotMarketOptions{
+				InstanceInterruptionBehavior: awstypes.InstanceInterruptionBehaviorTerminate,
+			},
+		},
+		NetworkInterfaces: []awstypes.InstanceNetworkInterfaceSpecification{
+			{
+				AssociatePublicIpAddress: aws.Bool(true),
+				DeviceIndex:              aws.Int32(0),
+				Groups: []string{
+					param.StaticParam.ParamAwsNodeId.SecurityGroupId, // Security group defined inside the network interface
+				},
+			},
+		},
+	}
+
+	// Create instance in aws
+	ec2RunInstanceOutput, err := usecase.awsClient.EC2Client.RunInstances(ctx, ec2RunInstanceInput)
+	if err != nil {
+		resp.Code = responsecode.CodeEC2Error
+		resp.Error = err.Error()
+		return ctx
+	}
+
+	if len(ec2RunInstanceOutput.Instances) == 0 {
+		resp.Code = responsecode.CodeEC2Error
+		resp.Error = "No instances created"
+		return ctx
+	}
+
+	createdEc2 := ec2RunInstanceOutput.Instances[0]
+	data, err := json.Marshal(createdEc2)
+	if err != nil {
+		resp.Code = responsecode.CodeInternalError
+		resp.Error = err.Error()
+		return ctx
+	}
+	usecase.log.Infoln("Created instance: ", string(data))
+
+	storage := entity.TblStorage{
+		Name:   req.Name,
+		SizeMb: req.StorageSizeMb,
+		Status: types.StorageStatusNew,
+	}
+
+	instance := entity.TblInstance{
+		Name:           req.Name,
+		AwsInstanceId:  *createdEc2.InstanceId,
+		PrivateIp:      *createdEc2.PrivateIpAddress,
+		InstanceTypeId: req.InstanceTypeId,
+	}
+
+	ctx, storageId, err := usecase.tblStorage.CreateStorage(ctx, storage)
+	if err != nil {
+		resp.Code = responsecode.CodeTblStorageError
+		resp.Error = err.Error()
+		return ctx
+	}
+
+	ctx, instanceId, err := usecase.tblInstance.CreateInstance(ctx, instance)
+	if err != nil {
+		resp.Code = responsecode.CodeTblInstanceError
+		resp.Error = err.Error()
+		return ctx
+	}
 
 	persistentNode := entity.TblPersistentNode{
 		Name:             req.Name,
 		OwnerId:          contextUser.Id,
 		ServerTemplateId: req.ServerTemplateId,
 		InstanceTypeId:   req.InstanceTypeId,
+		StorageId:        storageId,
+		InstanceId:       instanceId,
+		Status:           types.PersistentNodeStatusCreating,
 	}
-
-	ctx, _, err := usecase.tblPersistentNode.CreatePersistentNode(ctx, persistentNode)
+	ctx, _, err = usecase.tblPersistentNode.CreatePersistentNode(ctx, persistentNode)
 	if err != nil {
 		resp.Code = responsecode.CodeTblPersistentNodeError
 		resp.Error = err.Error()
-		return
+		return ctx
 	}
 
 	resp.Code = responsecode.CodeSuccess
+	return ctx
 }
 
 func (usecase *PersistentNodeUseCaseImpl) RunPersistentNodeScript(ctx context.Context, req request.RunPersistentNodeScriptRequest, resp *response.APIResponse) {

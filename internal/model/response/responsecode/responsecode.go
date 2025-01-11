@@ -16,6 +16,8 @@ const (
 	// Internal
 	CodeJwtError      ResponseCode = "JWTERR"
 	CodeInternalError ResponseCode = "IE"
+	CodeAWSError      ResponseCode = "AWSERR"
+	CodeEC2Error      ResponseCode = "EC2ERR"
 
 	// DB Error
 	CodeTblServerTemplateError ResponseCode = "TBLSTE"

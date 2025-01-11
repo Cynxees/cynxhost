@@ -5,6 +5,7 @@ import (
 	"cynxhost/internal/repository/database"
 	"cynxhost/internal/repository/database/tblinstance"
 	"cynxhost/internal/repository/database/tblinstancetype"
+	"cynxhost/internal/repository/database/tblparameter"
 	"cynxhost/internal/repository/database/tblpersistentnode"
 	"cynxhost/internal/repository/database/tblscript"
 	"cynxhost/internal/repository/database/tblservertemplate"
@@ -20,6 +21,7 @@ type Repos struct {
 	TblInstanceType   database.TblInstanceType
 	TblPersistentNode database.TblPersistentNode
 	TblStorage        database.TblStorage
+	TblParameter      database.TblParameter
 	JWTManager        *dependencies.JWTManager
 }
 
@@ -33,6 +35,7 @@ func NewRepos(dependencies *Dependencies) *Repos {
 		TblInstanceType:   tblinstancetype.New(dependencies.DatabaseClient.Db),
 		TblPersistentNode: tblpersistentnode.New(dependencies.DatabaseClient.Db),
 		TblStorage:        tblstorage.New(dependencies.DatabaseClient.Db),
+		TblParameter:      tblparameter.New(dependencies.DatabaseClient.Db),
 		JWTManager:        dependencies.JWTManager,
 	}
 }

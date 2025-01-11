@@ -7,7 +7,7 @@ import (
 )
 
 type PersistentNodeUseCase interface {
-	CreatePersistentNode(ctx context.Context, req request.CreatePersistentNodeRequest, resp *response.APIResponse)
+	CreatePersistentNode(ctx context.Context, req request.CreatePersistentNodeRequest, resp *response.APIResponse) context.Context
 	GetPersistentNodes(ctx context.Context, resp *response.APIResponse)
 	GetPersistentNode(ctx context.Context, req request.GetPersistentNodeRequest, resp *response.APIResponse) context.Context
 	RunPersistentNodeScript(ctx context.Context, req request.RunPersistentNodeScriptRequest, resp *response.APIResponse)

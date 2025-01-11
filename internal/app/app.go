@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"cynxhost/internal/dependencies/param"
 	"log"
 )
 
@@ -28,8 +29,11 @@ func NewApp(ctx context.Context, configPath string) (*App, error) {
 	logger.Infoln("Initializing Repositories")
 	repos := NewRepos(dependencies)
 
+	logger.Infoln("Initializing Param")
+	go param.SetupStaticParam(repos.TblParameter, logger)
+
 	logger.Infoln("Initializing Usecases")
-	usecases := NewUseCases(repos)
+	usecases := NewUseCases(repos, dependencies)
 
 	logger.Infoln("App initialized")
 	return &App{

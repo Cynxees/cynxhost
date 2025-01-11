@@ -75,17 +75,27 @@ type TblStorage struct {
 }
 
 type TblPersistentNode struct {
-	Id               int               `gorm:"primaryKey"`
-	CreatedDate      time.Time         `gorm:"autoCreateTime"`
-	UpdatedDate      time.Time         `gorm:"autoUpdateTime"`
-	Name             string            `gorm:"size:255;not null"`
-	OwnerId          int               `gorm:"not null"`
-	ServerTemplateId int               `gorm:"not null"`
-	InstanceTypeId   int               `gorm:"not null"`
-	StorageId        int               `gorm:"not null"`
-	Status           string            `gorm:"size:255;not null"`
-	Owner            TblUser           `gorm:"foreignKey:OwnerId"`
-	ServerTemplate   TblServerTemplate `gorm:"foreignKey:ServerTemplateId"`
-	InstanceType     TblInstanceType   `gorm:"foreignKey:InstanceTypeId"`
-	Storage          TblStorage        `gorm:"foreignKey:StorageId"`
+	Id               int                        `gorm:"primaryKey"`
+	CreatedDate      time.Time                  `gorm:"autoCreateTime"`
+	UpdatedDate      time.Time                  `gorm:"autoUpdateTime"`
+	Name             string                     `gorm:"size:255;not null"`
+	OwnerId          int                        `gorm:"not null"`
+	ServerTemplateId int                        `gorm:"not null"`
+	InstanceId       int                        `gorm:"default:null"`
+	InstanceTypeId   int                        `gorm:"not null"`
+	StorageId        int                        `gorm:"not null"`
+	Status           types.PersistentNodeStatus `gorm:"size:255;not null"`
+	Owner            TblUser                    `gorm:"foreignKey:OwnerId"`
+	ServerTemplate   TblServerTemplate          `gorm:"foreignKey:ServerTemplateId"`
+	Instance         TblInstance                `gorm:"foreignKey:InstanceId"`
+	InstanceType     TblInstanceType            `gorm:"foreignKey:InstanceTypeId"`
+	Storage          TblStorage                 `gorm:"foreignKey:StorageId"`
+}
+
+type TblParameter struct {
+	Id          string    `gorm:"primaryKey"`
+	Value       string    `gorm:"type:text;not null"`
+	Desc        string    `gorm:"type:text;not null"`
+	CreatedDate time.Time `gorm:"autoCreateTime"`
+	UpdatedDate time.Time `gorm:"autoUpdateTime"`
 }

@@ -38,7 +38,7 @@ func newAWSConfig(accessKeyId string, secret string) *aws.Config {
 				"", // Optional session token (use if MFA is enabled, otherwise leave it empty)
 			),
 		),
-		config.WithRegion("ap-southeast-3"),
+		config.WithRegion("ap-southeast-1"),
 	)
 
 	if err != nil {

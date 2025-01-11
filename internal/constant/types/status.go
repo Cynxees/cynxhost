@@ -11,3 +11,18 @@ const (
 	StorageStatusReady                 StorageStatus = "READY"
 	StorageStatusNew                   StorageStatus = "NEW"
 )
+
+const (
+
+	// No Process
+	PersistentNodeStatusRunning  PersistentNodeStatus = "RUNNING"
+	PersistentNodeStatusStopped  PersistentNodeStatus = "STOPPED"
+	PersistentNodeStatusShutdown PersistentNodeStatus = "SHUTDOWN"
+
+	// Processing ( in the middle of running script or something )
+	PersistentNodeStatusCreating     PersistentNodeStatus = "CREATING"
+	PersistentNodeStatusSetup        PersistentNodeStatus = "SETUP"
+	PersistentNodeStatusStarting     PersistentNodeStatus = "STARTING"
+	PersistentNodeStatusStopping     PersistentNodeStatus = "STOPPING"
+	PersistentNodeStatusShuttingDown PersistentNodeStatus = "SHUTTING_DOWN"
+)

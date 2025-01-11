@@ -2,6 +2,7 @@ package controller
 
 import (
 	"cynxhost/internal/app"
+	"cynxhost/internal/controller/persistentnodecontroller"
 	"cynxhost/internal/controller/servertemplatecontroller"
 	"cynxhost/internal/controller/usercontroller"
 	"cynxhost/internal/middleware"
@@ -22,7 +23,7 @@ type HttpServer struct {
 func NewHttpServer(app *app.App) (*HttpServer, error) {
 
 	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"*"},        // replace with your frontend URL
+		AllowedOrigins: []string{"*"},                            // replace with your frontend URL
 		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"}, // allowed methods
 		AllowedHeaders: []string{"Content-Type"},                 // allowed headers
 	})
@@ -33,7 +34,7 @@ func NewHttpServer(app *app.App) (*HttpServer, error) {
 
 	handleRouterFunc := func(path string, handler middleware.HandlerFuncWithHelper, requireAuth bool) *mux.Route {
 		wrappedHandler := middleware.WrapHandler(handler, debug)
-		
+
 		if requireAuth && !debug {
 			wrappedHandler = middleware.AuthMiddleware(app.Dependencies.JWTManager, wrappedHandler, debug)
 		}
@@ -42,6 +43,7 @@ func NewHttpServer(app *app.App) (*HttpServer, error) {
 
 	userController := usercontroller.New(app.Usecases.UserUseCase, app.Dependencies.Validator)
 	serverTemplateController := servertemplatecontroller.New(app.Usecases.ServerTemplateUseCase, app.Dependencies.Validator)
+	persistentNodeController := persistentnodecontroller.New(app.Usecases.PersistentNodeUseCase, app.Dependencies.Validator)
 
 	// User
 	handleRouterFunc("user/register", userController.RegisterUser, false)
@@ -50,7 +52,11 @@ func NewHttpServer(app *app.App) (*HttpServer, error) {
 	handleRouterFunc("user/paginate", userController.PaginateUser, true)
 	handleRouterFunc("user/profile", userController.GetProfile, true)
 
+	// Server Template
 	handleRouterFunc("server-template/paginate", serverTemplateController.PaginateServerTemplate, true)
+
+	// Persistent Node
+	handleRouterFunc("persistent-node/create", persistentNodeController.CreatePersistentNode, true)
 
 	r.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
