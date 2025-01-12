@@ -81,3 +81,27 @@ func (controller *PersistentNodeController) StatusCallbackPersistentNode(w http.
 
 	return ctx, apiResponse
 }
+
+func (controller *PersistentNodeController) SendCommandPersistentNode(w http.ResponseWriter, r *http.Request) (context.Context, response.APIResponse) {
+	var requestBody request.SendCommandPersistentNodeRequest
+	var apiResponse response.APIResponse
+
+	ctx := r.Context()
+	sessionUser, ok := helper.GetUserFromContext(ctx)
+	if !ok {
+		apiResponse.Code = responsecode.CodeAuthenticationError
+		apiResponse.Error = "User not found in context"
+		return ctx, apiResponse
+	}
+
+	requestBody.SessionUser = sessionUser
+	if err := helper.DecodeAndValidateRequest(r, &requestBody, controller.validator); err != nil {
+		apiResponse.Code = responsecode.CodeValidationError
+		apiResponse.Error = err.Error()
+		return ctx, apiResponse
+	}
+
+	ctx = controller.persistentNodeUsecase.SendCommandPersistentNode(ctx, requestBody, &apiResponse)
+
+	return ctx, apiResponse
+}

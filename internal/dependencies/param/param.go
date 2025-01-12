@@ -11,8 +11,9 @@ import (
 )
 
 type params struct {
-	ParamAwsNodeId     param.ParamAwsNodeId
-	ParamAwsNodeScript param.ParamAwsNodeScript
+	ParamAwsNodeId       param.ParamAwsNodeId
+	ParamAwsNodeScript   param.ParamAwsNodeScript
+	ParamAwsLaunchScript string
 }
 
 var StaticParam params
@@ -31,6 +32,10 @@ func getParamDetailList(staticParam *params) map[string]paramDetail {
 		"AWS_NODE_SCRIPT": {
 			IsObject:             true,
 			ParamObjectReference: &staticParam.ParamAwsNodeScript,
+		},
+		"AWS_LAUNCH_SCRIPT": {
+			IsObject:             false,
+			ParamObjectReference: &staticParam.ParamAwsLaunchScript,
 		},
 	}
 }

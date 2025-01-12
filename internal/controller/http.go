@@ -63,6 +63,9 @@ func NewHttpServer(app *app.App) (*HttpServer, error) {
 	handleRouterFunc("persistent-node/callback/launch", persistentNodeController.LaunchCallbackPersistentNode, false)
 	handleRouterFunc("persistent-node/callback/update-status", persistentNodeController.StatusCallbackPersistentNode, false)
 
+	// Persistent Node Dashboard
+	handleRouterFunc("persistent-node/dashboard/send-command", persistentNodeController.SendCommandPersistentNode, true)
+
 	r.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		if _, err := w.Write([]byte("OK")); err != nil {

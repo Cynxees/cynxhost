@@ -1,17 +1,56 @@
 #!/bin/bash
 
+DISK_DEVICE="/dev/xvdb"
+MOUNT_DIR="/home/cynxhost/node"
+
 # Format Disk
-sudo mkfs.ext4 /dev/xvdb
+echo "Formatting disk $DISK_DEVICE"
+sudo mkfs.ext4 "$DISK_DEVICE"
 
-# Mount Disk
-echo "creating folder for data"
-mkdir -p /home/cynxhost/node
+if [ $? -ne 0 ]; then
+    echo "Failed to format the disk. Trying with nvme1n1..."
+    DISK_DEVICE="/dev/nvme1n1"
 
-echo "mounting disk"
-mount /dev/xvdb /home/cynxhost/node
+    echo "Formatting disk $DISK_DEVICE"
+    sudo mkfs.ext4 "$DISK_DEVICE"
 
-echo "disk mounted"
-cd /home/cynxhost/node
+    if [ $? -ne 0 ]; then
+        echo "Failed to format the disk."
+        exit 1
+    fi
+fi
+
+# Step 1: Create the folder for the data
+echo "Creating folder for data at $MOUNT_DIR..."
+mkdir -p "$MOUNT_DIR"
+
+# Step 2: Mount the disk
+echo "Mounting disk $DISK_DEVICE to $MOUNT_DIR..."
+mount "$DISK_DEVICE" "$MOUNT_DIR"
+
+if [ $? -ne 0 ]; then
+    echo "Failed to mount the disk."
+    exit 1
+fi
+
+echo "Disk mounted successfully."
+
+# Step 3: Set permissions to public (read/write for everyone)
+echo "Setting permissions to public..."
+chmod -R 777 "$MOUNT_DIR"
+
+if [ $? -ne 0 ]; then
+    echo "Failed to set permissions."
+    exit 1
+fi
+
+echo "Permissions set to public successfully."
+
+# Step 4: Change directory to the mounted folder
+cd "$MOUNT_DIR" || { echo "Failed to change directory to $MOUNT_DIR"; exit 1; }
+
+# Confirmation
+echo "Disk setup is complete. Current directory: $(pwd)"
 
 # Fetch metadata
 TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
@@ -26,31 +65,32 @@ VOLUME_ID=$(aws ec2 describe-volumes \
 --output text)
 
 # Send to backend
-RESPONSE=$(curl -X POST {{LAUNCH_SUCCESS_CALLBACK_URL}} \
+RESPONSE=$(curl -X POST {{.LAUNCH_SUCCESS_CALLBACK_URL}} \
 -H "Content-Type: application/json" \
 -d '{
 "aws_instance_id": "'"$AWS_INSTANCE_ID"'",
 "public_ip": "'"$PUBLIC_IP"'",
-"ebs_volume_id": "'"$VOLUME_ID"'"
-"type": "{{LAUNCH_SUCCESS_TYPE}}"
+"ebs_volume_id": "'"$VOLUME_ID"'",
+"type": "{{.LAUNCH_SUCCESS_TYPE}}"
 }')
 
-SCRIPT=$(echo "$RESPONSE" | jq -r '.data.script')
-PERSISTENT_NODE_ID=$(echo "$RESPONSE" | jq -r '.data.persistent_node_id')
+SCRIPT=$(echo "$RESPONSE" | jq -r '.data.Script')
+PERSISTENT_NODE_ID=$(echo "$RESPONSE" | jq -r '.data.PersistentNodeId')
 
 if [ "$SCRIPT" != "null" ] && [ -n "$SCRIPT" ]; then
-echo "Received script: $SCRIPT"
-# Execute the received script
-eval "$SCRIPT"
+  echo "Received base64 encoded script"
+  
+  # Decode the base64 encoded script and execute it
+  echo "$SCRIPT" | base64 --decode | bash
 
-# Send success response
-echo "Sending success response"
-curl -X POST {{SETUP_SUCCESS_CALLBACK_URL}} \
--H "Content-Type: application/json" \
--d '{
-  "persistent_node_id": "'"$PERSISTENT_NODE_ID"'",
-  "type": "{{SETUP_SUCCESS_TYPE}}"
-}'
+  # Send success response
+  echo "Sending success response"
+  curl -X POST {{.SETUP_SUCCESS_CALLBACK_URL}} \
+  -H "Content-Type: application/json" \
+  -d '{
+    "persistent_node_id": "'"$PERSISTENT_NODE_ID"'",
+    "type": "{{.SETUP_SUCCESS_TYPE}}"
+  }'
 
 else
 echo "No script found in response."

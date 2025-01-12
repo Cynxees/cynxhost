@@ -1,5 +1,7 @@
 package request
 
+import contextmodel "cynxhost/internal/model/context"
+
 type CreatePersistentNodeRequest struct {
 	ServerTemplateId int    `json:"server_template_id" validate:"required"`
 	StorageSizeMb    int    `json:"storage_size_mb" validate:"required"`
@@ -8,7 +10,7 @@ type CreatePersistentNodeRequest struct {
 }
 
 type LaunchCallbackPersistentNodeRequest struct {
-	ClientIp string `json:"requester_ip" validate:"required"`
+	ClientIp string `validate:"required"`
 
 	AwsInstanceId string `json:"aws_instance_id" validate:"required"`
 	PublicIp      string `json:"public_ip" validate:"required"`
@@ -39,4 +41,11 @@ type RunPersistentNodeScriptRequest struct {
 
 type GetPersistentNodeRequest struct {
 	PersistentNodeId int `json:"persistent_node_id" validate:"required"`
+}
+
+type SendCommandPersistentNodeRequest struct {
+	SessionUser contextmodel.User `validate:"required"`
+
+	PersistentNodeId int    `json:"persistent_node_id" validate:"required"`
+	Command          string `json:"command" validate:"required"`
 }

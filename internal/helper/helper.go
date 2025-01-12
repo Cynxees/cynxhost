@@ -16,7 +16,7 @@ import (
 
 func DecodeAndValidateRequest(r *http.Request, dst interface{}, v *validator.Validate) error {
 	if err := json.NewDecoder(r.Body).Decode(dst); err != nil {
-		return errors.New("invalid request payload")
+		return errors.New("invalid request payload: " + err.Error())
 	}
 
 	if err := v.Struct(dst); err != nil {

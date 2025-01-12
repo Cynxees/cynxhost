@@ -15,4 +15,7 @@ type PersistentNodeUseCase interface {
 	// Callback
 	LaunchCallbackPersistentNode(ctx context.Context, req request.LaunchCallbackPersistentNodeRequest, resp *response.APIResponse) context.Context
 	StatusCallbackPersistentNode(ctx context.Context, req request.StatusCallbackPersistentNodeRequest, resp *response.APIResponse) context.Context
+
+	// Admin Dashboard
+	SendCommandPersistentNode(ctx context.Context, req request.SendCommandPersistentNodeRequest, resp *response.APIResponse) context.Context
 }

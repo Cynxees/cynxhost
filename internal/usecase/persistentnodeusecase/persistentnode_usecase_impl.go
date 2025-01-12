@@ -132,7 +132,7 @@ func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Conte
 		"SETUP_SUCCESS_TYPE":          string(types.SetupSuccessCallbackPersistentNodeType),
 	}
 
-	userData, err := helper.ReplacePlaceholders(param.StaticParam.ParamAwsNodeScript.InitialLaunchScript, userDataVariables)
+	userData, err := helper.ReplacePlaceholders(string(param.StaticParam.ParamAwsLaunchScript), userDataVariables)
 	if err != nil {
 		resp.Code = responsecode.CodeInternalError
 		resp.Error = err.Error()
@@ -160,7 +160,7 @@ func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Conte
 			{
 				DeviceName: aws.String("/dev/sdb"),
 				Ebs: &awstypes.EbsBlockDevice{
-					DeleteOnTermination: aws.Bool(false),
+					DeleteOnTermination: aws.Bool(true), // TODO: Change to false
 					VolumeSize:          aws.Int32(8),
 					VolumeType:          awstypes.VolumeTypeGp2,
 				},

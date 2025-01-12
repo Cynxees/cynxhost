@@ -8,6 +8,7 @@ import (
 	"cynxhost/internal/model/response"
 	"cynxhost/internal/model/response/responsecode"
 	"cynxhost/internal/model/response/responsedata"
+	"encoding/base64"
 	"fmt"
 	"strconv"
 )
@@ -89,10 +90,12 @@ func (usecase *PersistentNodeUseCaseImpl) LaunchCallbackPersistentNode(ctx conte
 		return ctx
 	}
 
+	encodedScript := base64.StdEncoding.EncodeToString([]byte(serverTemplate.Script.SetupScript))
+
 	resp.Code = responsecode.CodeSuccess
 	resp.Data = responsedata.LaunchCallbackPersistentNodeResponseData{
 		PersistentNodeId: persistentNode.Id,
-		Script:           serverTemplate.Script.SetupScript,
+		Script:           encodedScript,
 	}
 
 	return ctx
