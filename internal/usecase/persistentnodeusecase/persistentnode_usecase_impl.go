@@ -125,11 +125,19 @@ func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Conte
 		return ctx
 	}
 
+	// Generate hash
+	hash := fmt.Sprintf("%d-%d-%s", contextUser.Id, req.InstanceTypeId, req.Name)
+	callbackBaseUrl := fmt.Sprintf("%s:%d", usecase.config.App.PrivateIp, usecase.config.App.Port)
+
 	userDataVariables := map[string]string{
-		"LAUNCH_SUCCESS_CALLBACK_URL": fmt.Sprintf("http://%s/api/v1/persistent-node/callback/launch", usecase.config.App.PrivateIp),
+		"LAUNCH_SUCCESS_CALLBACK_URL": fmt.Sprintf("http://%s/api/v1/persistent-node/callback/launch", callbackBaseUrl),
 		"LAUNCH_SUCCESS_TYPE":         string(types.LaunchCallbackPersistentNodeTypeInitialLaunch),
-		"SETUP_SUCCESS_CALLBACK_URL":  fmt.Sprintf("http://%s/api/v1/persistent-node/callback/update-status", usecase.config.App.PrivateIp),
+		"SETUP_SUCCESS_CALLBACK_URL":  fmt.Sprintf("http://%s/api/v1/persistent-node/callback/update-status", callbackBaseUrl),
 		"SETUP_SUCCESS_TYPE":          string(types.SetupSuccessCallbackPersistentNodeType),
+		"JWT_SECRET":                  hash,
+		"CENTRAL_PRIVATE_IP":          usecase.config.App.PrivateIp,
+		"CENTRAL_PUBLIC_IP":           usecase.config.App.PublicIp,
+		"CENTRAL_PORT":                strconv.Itoa(usecase.config.App.Port),
 	}
 
 	userData, err := helper.ReplacePlaceholders(string(param.StaticParam.ParamAwsLaunchScript), userDataVariables)

@@ -13,6 +13,7 @@ type Config struct {
 		Name      string `mapstructure:"name"`
 		Address   string `mapstructure:"address"`
 		PrivateIp string `mapstructure:"privateIp"`
+		PublicIp	string `mapstructure:"publicIp"`
 		Key       string `mapstructure:"key"`
 		Port      int    `mapstructure:"port"`
 		Debug     bool   `mapstructure:"debug"`

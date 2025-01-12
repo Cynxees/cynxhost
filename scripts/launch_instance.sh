@@ -56,7 +56,30 @@ echo "Disk setup is complete. Current directory: $(pwd)"
 TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
 AWS_INSTANCE_ID=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/instance-id)
 PUBLIC_IP=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/public-ipv4)
+PRIVATE_IP=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/local-ipv4)
 
+# Write .env for cynxhost-agent
+cd /home/cynxhost/cynxhost-agent || { echo "Failed to change directory to /home/cynxhost/cynxhost-agent"; exit 1; }
+touch .env
+
+echo "Writing to .env file..."
+{
+  echo "JWT_SECRET=\"{{.JWT_SECRET}}\""
+  echo "APP_PUBLIC_IP=\"$PUBLIC_IP\""
+  echo "APP_PRIVATE_IP=\"$PRIVATE_IP\""
+  echo "CENTRAL_PRIVATE_IP=\"{{.CENTRAL_PRIVATE_IP}}\""
+  echo "CENTRAL_PUBLIC_IP=\"{{.CENTRAL_PUBLIC_IP}}\""
+  echo "CENTRAL_PORT=\"{{.CENTRAL_PORT}}\""
+} > .env
+
+# Fetching cynxhostagent from s3
+echo "Fetching cynxhostagent from s3..."
+aws s3 cp s3://cynxhost/cynxhostagent/cynxhostagent . --region ap-southeast-1
+chmod +x cynxhostagent
+
+# Restarting cynxhost agent service
+echo "Restarting cynxhost agent service..."
+sudo systemctl restart cynxhost-agent.service
 
 # Fetch EBS Volume ID
 VOLUME_ID=$(aws ec2 describe-volumes \
