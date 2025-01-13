@@ -262,10 +262,135 @@ func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Conte
 		return ctx
 	}
 
+	// Delete the instance ( TODO )
+
+	// Change the status of the persistent node ( TODO )
+
 	resp.Code = responsecode.CodeSuccess
 	return ctx
 }
 
-func (usecase *PersistentNodeUseCaseImpl) RunPersistentNodeScript(ctx context.Context, req request.RunPersistentNodeScriptRequest, resp *response.APIResponse) {
+func (usecase *PersistentNodeUseCaseImpl) ShutdownCallbackPersistentNode(ctx context.Context, req request.ShutdownCallbackPersistentNodeRequest, resp *response.APIResponse) context.Context {
 
+	_, persistentNodes, err := usecase.tblPersistentNode.GetPersistentNodes(ctx, "id", strconv.Itoa(req.PersistentNodeId))
+	if err != nil {
+		resp.Code = responsecode.CodeTblPersistentNodeError
+		resp.Error = err.Error()
+
+		return ctx
+	}
+
+	if len(persistentNodes) == 0 {
+		resp.Code = responsecode.CodeNotFound
+		resp.Error = "Persistent node not found"
+
+		return ctx
+	}
+
+	persistentNode := persistentNodes[0]
+
+	if persistentNode.Instance == nil {
+		resp.Code = responsecode.CodeNotFound
+		resp.Error = "No Instance Running instance found"
+
+		return ctx
+	}
+
+	// Check if the persistent node ip is the same
+	if persistentNode.Instance.PrivateIp != req.ClientIp && persistentNode.Instance.PublicIp != req.ClientIp {
+		resp.Code = responsecode.CodeForbidden
+		resp.Error = "You are not allowed to access this persistent node"
+
+		return ctx
+	}
+
+	// Shutdown the instance
+	terminatedInstance, err := usecase.shutdownInstance(ctx, persistentNode.Instance.AwsInstanceId)
+	if err != nil {
+		resp.Code = responsecode.CodeEC2Error
+		resp.Error = err.Error()
+
+		return ctx
+	}
+
+	if terminatedInstance.CurrentState.Name == awstypes.InstanceStateNameTerminated || terminatedInstance.CurrentState.Name == awstypes.InstanceStateNameShuttingDown {
+		resp.Code = responsecode.CodeNotAllowed
+		resp.Error = "Instance already terminated or is shutting down"
+		return ctx
+	}
+
+	// Delete the instance ( TODO )
+
+	// Change the status of the persistent node ( TODO )
+
+	resp.Code = responsecode.CodeSuccess
+	return ctx
+}
+
+func (usecase *PersistentNodeUseCaseImpl) ForceShutdownPersistentNode(ctx context.Context, req request.ForceShutdownPersistentNodeRequest, resp *response.APIResponse) context.Context {
+
+	_, persistentNodes, err := usecase.tblPersistentNode.GetPersistentNodes(ctx, "id", strconv.Itoa(req.PersistentNodeId))
+	if err != nil {
+		resp.Code = responsecode.CodeTblPersistentNodeError
+		resp.Error = err.Error()
+
+		return ctx
+	}
+
+	if len(persistentNodes) == 0 {
+		resp.Code = responsecode.CodeNotFound
+		resp.Error = "Persistent node not found"
+
+		return ctx
+	}
+
+	persistentNode := persistentNodes[0]
+
+	// Check if owner is the same
+	if persistentNode.OwnerId != req.SessionUser.Id {
+		resp.Code = responsecode.CodeForbidden
+		resp.Error = "You are not allowed to access this persistent node"
+
+		return ctx
+	}
+
+	if persistentNode.Instance == nil {
+		resp.Code = responsecode.CodeNotFound
+		resp.Error = "No Instance Running instance found"
+
+		return ctx
+	}
+
+	// Shutdown the instance
+	terminatedInstance, err := usecase.shutdownInstance(ctx, persistentNode.Instance.AwsInstanceId)
+	if err != nil {
+		resp.Code = responsecode.CodeEC2Error
+		resp.Error = err.Error()
+
+		return ctx
+	}
+
+	if terminatedInstance.CurrentState.Name == awstypes.InstanceStateNameTerminated {
+		resp.Code = responsecode.CodeNotAllowed
+		resp.Error = "Instance already terminated"
+		return ctx
+	}
+
+	resp.Code = responsecode.CodeSuccess
+	return ctx
+}
+
+func (usecase *PersistentNodeUseCaseImpl) shutdownInstance(ctx context.Context, awsInstanceId string) (*awstypes.InstanceStateChange, error) {
+
+	response, err := usecase.awsClient.EC2Client.TerminateInstances(ctx, &ec2.TerminateInstancesInput{
+		InstanceIds: []string{awsInstanceId},
+	})
+
+	if len(response.TerminatingInstances) == 0 {
+		return nil, fmt.Errorf("No instances terminated")
+	}
+
+	terminatedInstance := response.TerminatingInstances[0]
+
+	return &terminatedInstance, err
 }

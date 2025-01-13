@@ -38,6 +38,16 @@ type TblServerTemplate struct {
 	Script      TblScript `gorm:"foreignKey:ScriptId" visibility:"1"`
 }
 
+type TblServerTemplateCategory struct {
+	Id               int               `gorm:"primaryKey" visibility:"1"`
+	CreatedDate      time.Time         `gorm:"autoCreateTime" visibility:"1"`
+	UpdatedDate      time.Time         `gorm:"autoUpdateTime" visibility:"1"`
+	Name             string            `gorm:"size:255;not null" visibility:"1"`
+	ParentId         int               `gorm:"default:null"`
+	ServerTemplateId int               `gorm:"default:null"`
+	ServerTemplate   TblServerTemplate `gorm:"foreignKey:ServerTemplateId"`
+}
+
 type TblInstanceType struct {
 	Id           int       `gorm:"primaryKey" visibility:"1"`
 	CreatedDate  time.Time `gorm:"autoCreateTime" visibility:"1"`
@@ -87,7 +97,7 @@ type TblPersistentNode struct {
 	Status           types.PersistentNodeStatus `gorm:"size:255;not null"`
 	Owner            TblUser                    `gorm:"foreignKey:OwnerId"`
 	ServerTemplate   TblServerTemplate          `gorm:"foreignKey:ServerTemplateId"`
-	Instance         TblInstance                `gorm:"foreignKey:InstanceId"`
+	Instance         *TblInstance               `gorm:"foreignKey:InstanceId"`
 	InstanceType     TblInstanceType            `gorm:"foreignKey:InstanceTypeId"`
 	Storage          TblStorage                 `gorm:"foreignKey:StorageId"`
 }

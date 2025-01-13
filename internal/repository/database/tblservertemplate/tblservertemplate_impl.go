@@ -59,3 +59,33 @@ func (database *TblServerTemplateImpl) DeleteServerTemplate(ctx context.Context,
 
 	return ctx, nil
 }
+
+func (database *TblServerTemplateImpl) GetServerTemplateCategories(ctx context.Context, key string, value string) (context.Context, []entity.TblServerTemplateCategory, error) {
+	var categories []entity.TblServerTemplateCategory
+
+	err := database.DB.WithContext(ctx).Preload("ServerTemplate").Where(key+" = ?", value).Find(&categories).Error
+	if err != nil {
+		return ctx, nil, err
+	}
+
+	return ctx, categories, nil
+}
+
+func (database *TblServerTemplateImpl) GetServerTemplateCategoryChildren(ctx context.Context, parentId *int) (context.Context, []entity.TblServerTemplateCategory, error) {
+	var categories []entity.TblServerTemplateCategory
+
+	if parentId == nil {
+		err := database.DB.WithContext(ctx).Where("parent_id IS NULL").Find(&categories).Error
+		if err != nil {
+			return ctx, nil, err
+		}
+		return ctx, categories, nil
+	}
+
+	err := database.DB.WithContext(ctx).Where("parent_id = ?", parentId).Find(&categories).Error
+	if err != nil {
+		return ctx, nil, err
+	}
+
+	return ctx, categories, nil
+}

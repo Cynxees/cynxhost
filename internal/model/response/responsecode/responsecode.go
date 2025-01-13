@@ -21,13 +21,14 @@ const (
 	CodeRCONError     ResponseCode = "RCONERR"
 
 	// DB Error
-	CodeTblServerTemplateError ResponseCode = "TBLSTE"
-	CodeTblUserError           ResponseCode = "TBLUSR"
-	CodeTblInstanceError       ResponseCode = "TBLINT"
-	CodeTblInstanceTypeError   ResponseCode = "TBLITT"
-	CodeTblPersistentNodeError ResponseCode = "TBLPND"
-	CodeTblScriptError         ResponseCode = "TBLSCP"
-	CodeTblStorageError        ResponseCode = "TBLSTO"
+	CodeTblServerTemplateError         ResponseCode = "TBLSTE"
+	CodeTblServerTemplateCategoryError ResponseCode = "TBLSTC"
+	CodeTblUserError                   ResponseCode = "TBLUSR"
+	CodeTblInstanceError               ResponseCode = "TBLINT"
+	CodeTblInstanceTypeError           ResponseCode = "TBLITT"
+	CodeTblPersistentNodeError         ResponseCode = "TBLPND"
+	CodeTblScriptError                 ResponseCode = "TBLSCP"
+	CodeTblStorageError                ResponseCode = "TBLSTO"
 )
 
 var ResponseCodeNames = map[ResponseCode]string{

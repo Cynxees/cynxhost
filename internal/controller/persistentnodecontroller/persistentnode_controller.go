@@ -105,3 +105,47 @@ func (controller *PersistentNodeController) SendCommandPersistentNode(w http.Res
 
 	return ctx, apiResponse
 }
+
+func (controller *PersistentNodeController) ShutdownCallbackPersistentNode(w http.ResponseWriter, r *http.Request) (context.Context, response.APIResponse) {
+	var requestBody request.ShutdownCallbackPersistentNodeRequest
+	var apiResponse response.APIResponse
+
+	ctx := r.Context()
+
+	requestBody.ClientIp = helper.GetClientIP(r)
+	if err := helper.DecodeAndValidateRequest(r, &requestBody, controller.validator); err != nil {
+		apiResponse.Code = responsecode.CodeValidationError
+		apiResponse.Error = err.Error()
+		return ctx, apiResponse
+	}
+
+	controller.persistentNodeUsecase.ShutdownCallbackPersistentNode(ctx, requestBody, &apiResponse)
+
+	return ctx, apiResponse
+}
+
+func (controller *PersistentNodeController) ForceShutdownPersistentNode(w http.ResponseWriter, r *http.Request) (context.Context, response.APIResponse) {
+	var requestBody request.ForceShutdownPersistentNodeRequest
+	var apiResponse response.APIResponse
+
+	ctx := r.Context()
+
+	sessionUser, ok := helper.GetUserFromContext(ctx)
+	if !ok {
+		apiResponse.Code = responsecode.CodeAuthenticationError
+		apiResponse.Error = "User not found in context"
+		return ctx, apiResponse
+	}
+
+	requestBody.SessionUser = sessionUser	
+	if err := helper.DecodeAndValidateRequest(r, &requestBody, controller.validator); err != nil {
+		apiResponse.Code = responsecode.CodeValidationError
+		apiResponse.Error = err.Error()
+		return ctx, apiResponse
+	}
+
+	controller.persistentNodeUsecase.ForceShutdownPersistentNode(ctx, requestBody, &apiResponse)
+
+	return ctx, apiResponse
+}
+

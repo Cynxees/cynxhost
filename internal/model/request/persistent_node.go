@@ -19,10 +19,22 @@ type LaunchCallbackPersistentNodeRequest struct {
 }
 
 type StatusCallbackPersistentNodeRequest struct {
-	ClientIp string `json:"requester_ip" validate:"required"`
+	ClientIp string `validate:"required"`
 
 	PersistentNodeId int    `json:"persistent_node_id" validate:"required"`
 	Type             string `json:"type" validate:"required"`
+}
+
+type ShutdownCallbackPersistentNodeRequest struct {
+	ClientIp string `validate:"required"`
+
+	PersistentNodeId int `json:"persistent_node_id" validate:"required"`
+}
+
+type ForceShutdownPersistentNodeRequest struct {
+	SessionUser contextmodel.User `validate:"required"`
+
+	PersistentNodeId int `json:"persistent_node_id" validate:"required"`
 }
 
 type PersistentNodeScript string

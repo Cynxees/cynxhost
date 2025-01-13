@@ -55,12 +55,16 @@ func NewHttpServer(app *app.App) (*HttpServer, error) {
 
 	// Server Template
 	handleRouterFunc("server-template/paginate", serverTemplateController.PaginateServerTemplate, true)
+	handleRouterFunc("server-template/detail", serverTemplateController.GetServerTemplate, true)
+	handleRouterFunc("server-template/categories", serverTemplateController.GetServerTemplateCategories, true)
 
 	// Persistent Node
 	handleRouterFunc("persistent-node/create", persistentNodeController.CreatePersistentNode, true)
+	handleRouterFunc("persistent-node/force-shutdown", persistentNodeController.ForceShutdownPersistentNode, true)
 
 	// Callbacks
 	handleRouterFunc("persistent-node/callback/launch", persistentNodeController.LaunchCallbackPersistentNode, false)
+	handleRouterFunc("persistent-node/callback/shutdown", persistentNodeController.ShutdownCallbackPersistentNode, false)
 	handleRouterFunc("persistent-node/callback/update-status", persistentNodeController.StatusCallbackPersistentNode, false)
 
 	// Persistent Node Dashboard

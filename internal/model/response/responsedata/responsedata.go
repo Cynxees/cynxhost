@@ -33,3 +33,11 @@ type LaunchCallbackPersistentNodeResponseData struct {
 	PersistentNodeId int
 	Script           string
 }
+
+type GetServerTemplateCategoriesResponseData struct {
+	ServerTemplateCategory []entity.TblServerTemplateCategory
+}
+
+type GetServerTemplateResponseData struct {
+	ServerTemplate entity.TblServerTemplate
+}
