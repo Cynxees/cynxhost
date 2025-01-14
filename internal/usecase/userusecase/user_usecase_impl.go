@@ -55,7 +55,7 @@ func (usecase *UserUseCaseImpl) CheckUsername(ctx context.Context, req request.C
 	resp.Code = responsecode.CodeSuccess
 }
 
-func (usecase *UserUseCaseImpl) RegisterUser(ctx context.Context, req request.RegisterUserRequest, resp *response.APIResponse) {
+func (usecase *UserUseCaseImpl) RegisterUser(ctx context.Context, req request.RegisterUserRequest, resp *response.APIResponse) *responsedata.AuthResponseData {
 	_, id, err := usecase.tblUser.InsertUser(ctx, entity.TblUser{
 		Username: req.Username,
 		Password: req.Password,
@@ -64,53 +64,58 @@ func (usecase *UserUseCaseImpl) RegisterUser(ctx context.Context, req request.Re
 	if err != nil {
 		resp.Code = responsecode.CodeTblUserError
 		resp.Error = err.Error()
-		return
+		return nil
 	}
 
 	token, err := usecase.jwtManager.GenerateToken(id)
 	if err != nil {
 		resp.Code = responsecode.CodeInternalError
 		resp.Error = err.Error()
-		return
+		return nil
 	}
 
 	resp.Code = responsecode.CodeSuccess
-	resp.Data = responsedata.AuthResponseData{
+	respData := responsedata.AuthResponseData{
 		AccessToken: token.AccessToken,
 		TokenType:   "Bearer",
 	}
 
+	resp.Data = respData
+	return &respData
 }
 
-func (usecase *UserUseCaseImpl) LoginUser(ctx context.Context, req request.LoginUserRequest, resp *response.APIResponse) {
+func (usecase *UserUseCaseImpl) LoginUser(ctx context.Context, req request.LoginUserRequest, resp *response.APIResponse) *responsedata.AuthResponseData {
 	_, user, err := usecase.tblUser.GetUser(ctx, "username", req.Username)
 	if err != nil {
 		resp.Code = responsecode.CodeTblUserError
 		resp.Error = err.Error()
-		return
+		return nil
 	}
 
 	if user == nil {
 		resp.Code = responsecode.CodeNotFound
-		return
+		return nil
 	}
 
 	if user.Password != req.Password {
 		resp.Code = responsecode.CodeInvalidCredentials
-		return
+		return nil
 	}
 
 	token, err := usecase.jwtManager.GenerateToken(user.Id)
 	if err != nil {
 		resp.Code = responsecode.CodeJwtError
-		return
+		return nil
 	}
 
 	resp.Code = responsecode.CodeSuccess
-	resp.Data = responsedata.AuthResponseData{
+	respData := responsedata.AuthResponseData{
 		AccessToken: token.AccessToken,
 		TokenType:   "Bearer",
 	}
+
+	resp.Data = respData
+	return &respData
 }
 
 func (usecase *UserUseCaseImpl) GetProfile(ctx context.Context, resp *response.APIResponse) context.Context {

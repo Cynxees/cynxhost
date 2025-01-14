@@ -10,37 +10,31 @@ import (
 	"cynxhost/internal/model/response/responsecode"
 	"net/http"
 	"strconv"
-	"strings"
 )
 
 func AuthMiddleware(JWTManager *dependencies.JWTManager, next http.HandlerFunc, debug bool) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		// Check for the Authorization header
-		authHeader := r.Header.Get("Authorization")
-		if authHeader == "" {
+		cookie, err := r.Cookie("AuthToken")
+		if err != nil {
+			if err == http.ErrNoCookie {
+				apiResponse := response.APIResponse{
+					Code:  responsecode.CodeAuthenticationError,
+					Error: "AuthToken cookie missing",
+				}
+				helper.WriteJSONResponse(w, http.StatusUnauthorized, apiResponse)
+				return
+			}
 			apiResponse := response.APIResponse{
 				Code:  responsecode.CodeAuthenticationError,
-				Error: "Authorization header missing",
+				Error: "Error retrieving cookie",
 			}
 			helper.WriteJSONResponse(w, http.StatusUnauthorized, apiResponse)
 			return
 		}
 
-		// Check if the token starts with "Bearer"
-		parts := strings.Split(authHeader, " ")
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			apiResponse := response.APIResponse{
-				Code:  responsecode.CodeAuthenticationError,
-				Error: "Invalid authorization token format",
-			}
-			helper.WriteJSONResponse(w, http.StatusUnauthorized, apiResponse)
-			return
-		}
-
-		// You could verify the token here if needed (e.g., check JWT signature)
-		token := parts[1]
+		token := cookie.Value
 		claims, err := JWTManager.VerifyToken(token)
 
 		if err != nil { // Replace with your token verification logic

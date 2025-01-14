@@ -56,7 +56,21 @@ func (controller *UserController) RegisterUser(w http.ResponseWriter, r *http.Re
 		return ctx, apiResponse
 	}
 
-	controller.userUsecase.RegisterUser(ctx, requestBody, &apiResponse)
+	resp := controller.userUsecase.RegisterUser(ctx, requestBody, &apiResponse)
+
+	if apiResponse.Code != responsecode.CodeSuccess || resp == nil {
+		return ctx, apiResponse
+	}
+
+	// Set cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:     "AuthToken",
+		Value:    resp.AccessToken,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   false,                    // Set to true if using HTTPS
+		SameSite: http.SameSiteStrictMode, // Adjust based on your requirements
+	})
 
 	return ctx, apiResponse
 }
@@ -90,7 +104,21 @@ func (controller *UserController) LoginUser(w http.ResponseWriter, r *http.Reque
 		return ctx, apiResponse
 	}
 
-	controller.userUsecase.LoginUser(ctx, requestBody, &apiResponse)
+	resp := controller.userUsecase.LoginUser(ctx, requestBody, &apiResponse)
+
+	if apiResponse.Code != responsecode.CodeSuccess || resp == nil {
+		return ctx, apiResponse
+	}
+
+	// Set cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:     "AuthToken",
+		Value:    resp.AccessToken,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   false,                    // Set to true if using HTTPS
+		SameSite: http.SameSiteStrictMode, // Adjust based on your requirements
+	})
 
 	return ctx, apiResponse
 }
