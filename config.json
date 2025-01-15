@@ -1,7 +1,7 @@
 {
   "app": {
     "privateIp": "172.31.31.155",
-    "publicIp": "47.129.250.117",
+    "publicIp": "47.130.69.79",
     "address": "0.0.0.0",
     "port": 3000,
     "name": "CYNXHOST",
@@ -13,7 +13,7 @@
   },
   "database": {
     "mysql": {
-      "host": "47.129.250.117",
+      "host": "47.130.69.79",
       "port": 3306,
       "database": "cynxhost",
       "username": "cynx",

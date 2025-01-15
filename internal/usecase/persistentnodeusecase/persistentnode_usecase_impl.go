@@ -73,8 +73,8 @@ func (usecase *PersistentNodeUseCaseImpl) GetPersistentNodes(ctx context.Context
 	}
 }
 
-func (usecase *PersistentNodeUseCaseImpl) GetPersistentNode(ctx context.Context, req request.GetPersistentNodeRequest, resp *response.APIResponse) context.Context {
-	_, persistentNodes, err := usecase.tblPersistentNode.GetPersistentNodes(ctx, "id", strconv.Itoa(req.PersistentNodeId))
+func (usecase *PersistentNodeUseCaseImpl) GetPersistentNode(ctx context.Context, req request.IdRequest, resp *response.APIResponse) context.Context {
+	_, persistentNodes, err := usecase.tblPersistentNode.GetPersistentNodes(ctx, "id", strconv.Itoa(req.Id))
 	if err != nil {
 		resp.Code = responsecode.CodeTblPersistentNodeError
 		resp.Error = err.Error()
@@ -252,7 +252,7 @@ func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Conte
 		ServerTemplateId: req.ServerTemplateId,
 		InstanceTypeId:   req.InstanceTypeId,
 		StorageId:        storageId,
-		InstanceId:       instanceId,
+		InstanceId:       &instanceId,
 		Status:           types.PersistentNodeStatusCreating,
 	}
 	ctx, _, err = usecase.tblPersistentNode.CreatePersistentNode(ctx, persistentNode)
@@ -261,10 +261,6 @@ func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Conte
 		resp.Error = err.Error()
 		return ctx
 	}
-
-	// Delete the instance ( TODO )
-
-	// Change the status of the persistent node ( TODO )
 
 	resp.Code = responsecode.CodeSuccess
 	return ctx
@@ -319,7 +315,30 @@ func (usecase *PersistentNodeUseCaseImpl) ShutdownCallbackPersistentNode(ctx con
 		return ctx
 	}
 
-	// Delete the instance ( TODO )
+	// Remove instance from persistent node
+	ctx, err = usecase.tblPersistentNode.UpdatePersistentNode(ctx, persistentNode.Id, entity.TblPersistentNode{
+		InstanceId: nil,
+	})
+
+	if err != nil {
+		resp.Code = responsecode.CodeTblPersistentNodeError
+		resp.Error = err.Error()
+		return ctx
+	}
+
+	// Delete the instance
+	if persistentNode.InstanceId == nil {
+		resp.Code = responsecode.CodeNotFound
+		resp.Error = "No instance found"
+		return ctx
+	}
+
+	ctx, err = usecase.tblInstance.DeleteInstance(ctx, *persistentNode.InstanceId)
+	if err != nil {
+		resp.Code = responsecode.CodeTblInstanceError
+		resp.Error = err.Error()
+		return ctx
+	}
 
 	// Change the status of the persistent node ( TODO )
 
@@ -375,6 +394,33 @@ func (usecase *PersistentNodeUseCaseImpl) ForceShutdownPersistentNode(ctx contex
 		resp.Error = "Instance already terminated"
 		return ctx
 	}
+
+	// Remove instance from persistent node
+	ctx, err = usecase.tblPersistentNode.UpdatePersistentNode(ctx, persistentNode.Id, entity.TblPersistentNode{
+		InstanceId: nil,
+	})
+
+	if err != nil {
+		resp.Code = responsecode.CodeTblPersistentNodeError
+		resp.Error = err.Error()
+		return ctx
+	}
+
+	// Delete the instance
+	if persistentNode.InstanceId == nil {
+		resp.Code = responsecode.CodeNotFound
+		resp.Error = "No instance found"
+		return ctx
+	}
+
+	ctx, err = usecase.tblInstance.DeleteInstance(ctx, *persistentNode.InstanceId)
+	if err != nil {
+		resp.Code = responsecode.CodeTblInstanceError
+		resp.Error = err.Error()
+		return ctx
+	}
+
+	// Change the status of the persistent node ( TODO )
 
 	resp.Code = responsecode.CodeSuccess
 	return ctx

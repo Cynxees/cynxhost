@@ -60,6 +60,8 @@ func NewHttpServer(app *app.App) (*HttpServer, error) {
 	handleRouterFunc("server-template/categories", serverTemplateController.GetServerTemplateCategories, true)
 
 	// Persistent Node
+	handleRouterFunc("persistent-node/show-owned", persistentNodeController.GetAllPersistentNodesFromUser, true)
+	handleRouterFunc("persistent-node/detail", persistentNodeController.GetPersistentNodeDetail, true)
 	handleRouterFunc("persistent-node/create", persistentNodeController.CreatePersistentNode, true)
 	handleRouterFunc("persistent-node/force-shutdown", persistentNodeController.ForceShutdownPersistentNode, true)
 

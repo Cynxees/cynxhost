@@ -91,7 +91,7 @@ type TblPersistentNode struct {
 	Name             string                     `gorm:"size:255;not null"`
 	OwnerId          int                        `gorm:"not null"`
 	ServerTemplateId int                        `gorm:"not null"`
-	InstanceId       int                        `gorm:"default:null"`
+	InstanceId       *int                       `gorm:"default:null"`
 	InstanceTypeId   int                        `gorm:"not null"`
 	StorageId        int                        `gorm:"not null"`
 	Status           types.PersistentNodeStatus `gorm:"size:255;not null"`

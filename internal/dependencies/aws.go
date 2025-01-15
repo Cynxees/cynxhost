@@ -30,7 +30,7 @@ func newEC2Client(config aws.Config) *ec2.Client {
 
 func newAWSConfig(accessKeyId string, secret string) *aws.Config {
 
-	cfg, err := config.LoadDefaultConfig(context.TODO(),
+	cfg, err := config.LoadDefaultConfig(context.Background(),
 		config.WithCredentialsProvider(
 			credentials.NewStaticCredentialsProvider(
 				accessKeyId,

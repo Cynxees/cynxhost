@@ -118,7 +118,7 @@ func (usecase *PersistentNodeUseCaseImpl) StatusCallbackPersistentNode(ctx conte
 	persistentNode := persistentNodes[0]
 
 	// Get instances
-	ctx, instances, err := usecase.tblInstance.GetInstances(ctx, "id", strconv.Itoa(persistentNode.InstanceId))
+	ctx, instances, err := usecase.tblInstance.GetInstances(ctx, "id", strconv.Itoa(*persistentNode.InstanceId))
 	if err != nil {
 		resp.Code = responsecode.CodeTblInstanceError
 		resp.Error = "Error getting instance: " + err.Error()

@@ -9,7 +9,7 @@ import (
 type PersistentNodeUseCase interface {
 	CreatePersistentNode(ctx context.Context, req request.CreatePersistentNodeRequest, resp *response.APIResponse) context.Context
 	GetPersistentNodes(ctx context.Context, resp *response.APIResponse)
-	GetPersistentNode(ctx context.Context, req request.GetPersistentNodeRequest, resp *response.APIResponse) context.Context
+	GetPersistentNode(ctx context.Context, req request.IdRequest, resp *response.APIResponse) context.Context
 	ForceShutdownPersistentNode(ctx context.Context, req request.ForceShutdownPersistentNodeRequest, resp *response.APIResponse) context.Context
 
 	// Callback

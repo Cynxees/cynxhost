@@ -137,7 +137,7 @@ func (controller *PersistentNodeController) ForceShutdownPersistentNode(w http.R
 		return ctx, apiResponse
 	}
 
-	requestBody.SessionUser = sessionUser	
+	requestBody.SessionUser = sessionUser
 	if err := helper.DecodeAndValidateRequest(r, &requestBody, controller.validator); err != nil {
 		apiResponse.Code = responsecode.CodeValidationError
 		apiResponse.Error = err.Error()
@@ -149,3 +149,29 @@ func (controller *PersistentNodeController) ForceShutdownPersistentNode(w http.R
 	return ctx, apiResponse
 }
 
+func (controller *PersistentNodeController) GetPersistentNodeDetail(w http.ResponseWriter, r *http.Request) (context.Context, response.APIResponse) {
+	var requestBody request.IdRequest
+	var apiResponse response.APIResponse
+
+	ctx := r.Context()
+
+	if err := helper.DecodeAndValidateRequest(r, &requestBody, controller.validator); err != nil {
+		apiResponse.Code = responsecode.CodeValidationError
+		apiResponse.Error = err.Error()
+		return ctx, apiResponse
+	}
+
+	controller.persistentNodeUsecase.GetPersistentNode(ctx, requestBody, &apiResponse)
+
+	return ctx, apiResponse
+}
+
+func (controller *PersistentNodeController) GetAllPersistentNodesFromUser(w http.ResponseWriter, r *http.Request) (context.Context, response.APIResponse) {
+	var apiResponse response.APIResponse
+
+	ctx := r.Context()
+
+	controller.persistentNodeUsecase.GetPersistentNodes(ctx, &apiResponse)
+
+	return ctx, apiResponse
+}
