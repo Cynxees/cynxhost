@@ -75,13 +75,10 @@ func (usecase *UserUseCaseImpl) RegisterUser(ctx context.Context, req request.Re
 	}
 
 	resp.Code = responsecode.CodeSuccess
-	respData := responsedata.AuthResponseData{
+	return &responsedata.AuthResponseData{
 		AccessToken: token.AccessToken,
 		TokenType:   "Bearer",
 	}
-
-	resp.Data = respData
-	return &respData
 }
 
 func (usecase *UserUseCaseImpl) LoginUser(ctx context.Context, req request.LoginUserRequest, resp *response.APIResponse) *responsedata.AuthResponseData {
@@ -109,13 +106,10 @@ func (usecase *UserUseCaseImpl) LoginUser(ctx context.Context, req request.Login
 	}
 
 	resp.Code = responsecode.CodeSuccess
-	respData := responsedata.AuthResponseData{
+	return &responsedata.AuthResponseData{
 		AccessToken: token.AccessToken,
 		TokenType:   "Bearer",
 	}
-
-	resp.Data = respData
-	return &respData
 }
 
 func (usecase *UserUseCaseImpl) GetProfile(ctx context.Context, resp *response.APIResponse) context.Context {

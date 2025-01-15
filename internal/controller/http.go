@@ -49,6 +49,7 @@ func NewHttpServer(app *app.App) (*HttpServer, error) {
 	// User
 	handleRouterFunc("user/register", userController.RegisterUser, false)
 	handleRouterFunc("user/login", userController.LoginUser, false)
+	handleRouterFunc("user/logout", userController.LogoutUser, false)
 	handleRouterFunc("user/check-username", userController.CheckUsername, false)
 	handleRouterFunc("user/paginate", userController.PaginateUser, true)
 	handleRouterFunc("user/profile", userController.GetProfile, true)

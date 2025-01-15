@@ -8,6 +8,7 @@ import (
 	"cynxhost/internal/model/response/responsecode"
 	"cynxhost/internal/usecase"
 	"net/http"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -68,7 +69,7 @@ func (controller *UserController) RegisterUser(w http.ResponseWriter, r *http.Re
 		Value:    resp.AccessToken,
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   false,                    // Set to true if using HTTPS
+		Secure:   false,                   // Set to true if using HTTPS
 		SameSite: http.SameSiteStrictMode, // Adjust based on your requirements
 	})
 
@@ -116,10 +117,29 @@ func (controller *UserController) LoginUser(w http.ResponseWriter, r *http.Reque
 		Value:    resp.AccessToken,
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   false,                    // Set to true if using HTTPS
+		Secure:   false,                   // Set to true if using HTTPS
 		SameSite: http.SameSiteStrictMode, // Adjust based on your requirements
 	})
 
+	return ctx, apiResponse
+}
+
+func (controller *UserController) LogoutUser(w http.ResponseWriter, r *http.Request) (context.Context, response.APIResponse) {
+	var apiResponse response.APIResponse
+
+	ctx := r.Context()
+
+	// Clear cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:     "AuthToken",
+		Value:    "",
+		Path:     "/",
+		HttpOnly: true,
+		Expires:  time.Unix(0, 0),
+		SameSite: http.SameSiteStrictMode, // Adjust based on your requirements
+	})
+
+	apiResponse.Code = responsecode.CodeSuccess
 	return ctx, apiResponse
 }
 
