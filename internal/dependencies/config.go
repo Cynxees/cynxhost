@@ -13,7 +13,7 @@ type Config struct {
 		Name      string `mapstructure:"name"`
 		Address   string `mapstructure:"address"`
 		PrivateIp string `mapstructure:"privateIp"`
-		PublicIp	string `mapstructure:"publicIp"`
+		PublicIp  string `mapstructure:"publicIp"`
 		Key       string `mapstructure:"key"`
 		Port      int    `mapstructure:"port"`
 		Debug     bool   `mapstructure:"debug"`
@@ -79,6 +79,7 @@ type Config struct {
 		CORS struct {
 			Enabled bool   `mapstructure:"enabled"`
 			Origin  string `mapstructure:"origin"`
+			Domain  string `mapstructure:"domain"`
 		} `mapstructure:"cors"`
 	} `mapstructure:"security"`
 }

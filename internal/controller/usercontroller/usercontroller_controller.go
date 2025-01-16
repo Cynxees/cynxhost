@@ -2,6 +2,7 @@ package usercontroller
 
 import (
 	"context"
+	"cynxhost/internal/dependencies"
 	"cynxhost/internal/helper"
 	"cynxhost/internal/model/request"
 	"cynxhost/internal/model/response"
@@ -16,15 +17,18 @@ import (
 type UserController struct {
 	userUsecase usecase.UserUseCase
 	validator   *validator.Validate
+	config      *dependencies.Config
 }
 
 func New(
 	userUseCase usecase.UserUseCase,
 	validate *validator.Validate,
+	config *dependencies.Config,
 ) *UserController {
 	return &UserController{
 		userUsecase: userUseCase,
 		validator:   validate,
+		config:      config,
 	}
 }
 
@@ -69,8 +73,9 @@ func (controller *UserController) RegisterUser(w http.ResponseWriter, r *http.Re
 		Value:    resp.AccessToken,
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   false,                   // Set to true if using HTTPS
-		SameSite: http.SameSiteStrictMode, // Adjust based on your requirements
+		Secure:   true,                  // Set to true if using HTTPS
+		SameSite: http.SameSiteNoneMode, // Adjust based on your requirements
+		Domain:   controller.config.Security.CORS.Domain,
 	})
 
 	return ctx, apiResponse
@@ -117,8 +122,9 @@ func (controller *UserController) LoginUser(w http.ResponseWriter, r *http.Reque
 		Value:    resp.AccessToken,
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   false,                 // Set to true if using HTTPS
+		Secure:   true,                  // Set to true if using HTTPS
 		SameSite: http.SameSiteNoneMode, // Adjust based on your requirements
+		Domain:   controller.config.Security.CORS.Domain,
 	})
 
 	return ctx, apiResponse
@@ -136,7 +142,9 @@ func (controller *UserController) LogoutUser(w http.ResponseWriter, r *http.Requ
 		Path:     "/",
 		HttpOnly: true,
 		Expires:  time.Unix(0, 0),
+		Secure:   true,
 		SameSite: http.SameSiteNoneMode, // Adjust based on your requirements
+		Domain:   controller.config.Security.CORS.Domain,
 	})
 
 	apiResponse.Code = responsecode.CodeSuccess

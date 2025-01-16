@@ -22,10 +22,13 @@ type HttpServer struct {
 
 func NewHttpServer(app *app.App) (*HttpServer, error) {
 
+	config := app.Dependencies.Config
+
 	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"*"},                            // replace with your frontend URL
-		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"}, // allowed methods
-		AllowedHeaders: []string{"Content-Type"},                 // allowed headers
+		AllowedOrigins:   []string{config.Security.CORS.Origin},               // replace with your frontend URL
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}, // allowed methods
+		AllowedHeaders:   []string{"Content-Type", "Authorization"},           // allowed headers
+		AllowCredentials: true,
 	})
 
 	r := mux.NewRouter()
@@ -42,7 +45,7 @@ func NewHttpServer(app *app.App) (*HttpServer, error) {
 		return r.HandleFunc(routerPath+path, wrappedHandler).Methods("POST", "GET")
 	}
 
-	userController := usercontroller.New(app.Usecases.UserUseCase, app.Dependencies.Validator)
+	userController := usercontroller.New(app.Usecases.UserUseCase, app.Dependencies.Validator, app.Dependencies.Config)
 	serverTemplateController := servertemplatecontroller.New(app.Usecases.ServerTemplateUseCase, app.Dependencies.Validator)
 	persistentNodeController := persistentnodecontroller.New(app.Usecases.PersistentNodeUseCase, app.Dependencies.Validator)
 
