@@ -117,8 +117,8 @@ func (controller *UserController) LoginUser(w http.ResponseWriter, r *http.Reque
 		Value:    resp.AccessToken,
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   false,                   // Set to true if using HTTPS
-		SameSite: http.SameSiteStrictMode, // Adjust based on your requirements
+		Secure:   false,                 // Set to true if using HTTPS
+		SameSite: http.SameSiteNoneMode, // Adjust based on your requirements
 	})
 
 	return ctx, apiResponse
@@ -136,7 +136,7 @@ func (controller *UserController) LogoutUser(w http.ResponseWriter, r *http.Requ
 		Path:     "/",
 		HttpOnly: true,
 		Expires:  time.Unix(0, 0),
-		SameSite: http.SameSiteStrictMode, // Adjust based on your requirements
+		SameSite: http.SameSiteNoneMode, // Adjust based on your requirements
 	})
 
 	apiResponse.Code = responsecode.CodeSuccess
