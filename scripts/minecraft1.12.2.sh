@@ -54,21 +54,13 @@ else
 fi
 
 # Create log files
-AGENT_DIR="/home/cynxhost/node/cynxhost-agent"
+AGENT_DIR="/home/cynxhost/cynxhost-agent"
 AGENT_OUTPUT_FILE="$AGENT_DIR/output.log"
-AGENT_INPUT_PIPE="$AGENT_DIR/input-pipe"
-SESSION_NAME="cynxhost-minecraft-server"
+SESSION_NAME="cynxhost-node"
 
 mkdir $AGENT_DIR
 touch $AGENT_OUTPUT_FILE
-mkfifo $AGENT_INPUT_PIPE
 
 # Start the Minecraft server
 echo "Starting Minecraft server..."
 tmux new-session -d -s $SESSION_NAME "java -Xmx1024M -Xms1024M -jar '$MC_SERVER_JAR' nogui > '$AGENT_OUTPUT_FILE' 2>&1"
-
-
-java -Xmx1024M -Xms1024M -jar "$MC_SERVER_JAR" nogui
-====
-
-echo "say Hello from server" | socat - TCP:172.31.5.231:25575

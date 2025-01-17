@@ -23,7 +23,6 @@ func NewApp(ctx context.Context, configPath string) (*App, error) {
 	err := dependencies.DatabaseClient.RunMigrations("migrations")
 	if err != nil {
 		logger.Fatalln("Failed to run migrations: ", err)
-		panic(err)
 	}
 
 	logger.Infoln("Initializing Repositories")
