@@ -13,6 +13,7 @@ import (
 	"cynxhost/internal/model/response/responsedata"
 	"cynxhost/internal/repository/database"
 	"cynxhost/internal/repository/externalapi/awsmanager"
+	"cynxhost/internal/repository/externalapi/porkbunmanager"
 	"cynxhost/internal/usecase"
 	"encoding/base64"
 	"encoding/json"
@@ -32,12 +33,14 @@ type PersistentNodeUseCaseImpl struct {
 	tblStorage        database.TblStorage
 	tblServerTemplate database.TblServerTemplate
 
-	awsManager *awsmanager.AWSManager
-	log        *logrus.Logger
-	config     *dependencies.Config
+	log    *logrus.Logger
+	config *dependencies.Config
+
+	awsManager     *awsmanager.AWSManager
+	porkbunManager *porkbunmanager.PorkbunManager
 }
 
-func New(tblPersistentNode database.TblPersistentNode, tblInstance database.TblInstance, tblInstanceType database.TblInstanceType, tblStorage database.TblStorage, tblServerTemplate database.TblServerTemplate, awsManager *awsmanager.AWSManager, logger *logrus.Logger, config *dependencies.Config) usecase.PersistentNodeUseCase {
+func New(tblPersistentNode database.TblPersistentNode, tblInstance database.TblInstance, tblInstanceType database.TblInstanceType, tblStorage database.TblStorage, tblServerTemplate database.TblServerTemplate, awsManager *awsmanager.AWSManager, logger *logrus.Logger, config *dependencies.Config, porkbunManager *porkbunmanager.PorkbunManager) usecase.PersistentNodeUseCase {
 
 	return &PersistentNodeUseCaseImpl{
 		tblPersistentNode: tblPersistentNode,
@@ -46,9 +49,11 @@ func New(tblPersistentNode database.TblPersistentNode, tblInstance database.TblI
 		tblInstance:       tblInstance,
 		tblInstanceType:   tblInstanceType,
 
-		awsManager: awsManager,
-		log:        logger,
-		config:     config,
+		log:    logger,
+		config: config,
+
+		awsManager:     awsManager,
+		porkbunManager: porkbunManager,
 	}
 }
 
@@ -126,6 +131,20 @@ func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Conte
 		return ctx
 	}
 
+	// Get Script
+	_, serverTemplate, err := usecase.tblServerTemplate.GetServerTemplate(ctx, "id", strconv.Itoa(req.ServerTemplateId))
+	if err != nil {
+		resp.Code = responsecode.CodeTblServerTemplateError
+		resp.Error = err.Error()
+		return ctx
+	}
+
+	if serverTemplate == nil {
+		resp.Code = responsecode.CodeNotFound
+		resp.Error = "Server template not found"
+		return ctx
+	}
+
 	// Generate hash
 	hash := fmt.Sprintf("%d-%d-%s", contextUser.Id, req.InstanceTypeId, req.Name)
 	callbackBaseUrl := fmt.Sprintf("%s:%d", usecase.config.App.PrivateIp, usecase.config.App.Port)
@@ -139,6 +158,8 @@ func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Conte
 		"CENTRAL_PRIVATE_IP":          usecase.config.App.PrivateIp,
 		"CENTRAL_PUBLIC_IP":           usecase.config.App.PublicIp,
 		"CENTRAL_PORT":                strconv.Itoa(usecase.config.App.Port),
+		"DOMAIN":                      fmt.Sprintf("%s.%s", req.ServerAlias, usecase.config.Porkbun.Domain),
+		"CONFIG_PATH":                 serverTemplate.Script.ConfigPath,
 	}
 
 	userData, err := helper.ReplacePlaceholders(string(param.StaticParam.ParamAwsLaunchScript), userDataVariables)

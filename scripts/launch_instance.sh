@@ -75,7 +75,9 @@ echo "Writing to .env file..."
 # Fetching cynxhostagent from s3
 echo "Fetching cynxhostagent from s3..."
 aws s3 cp s3://cynxhost/cynxhostagent/cynxhostagent . --region ap-southeast-1
-chmod +x cynxhostagent
+aws s3 cp s3://cynxhost/{{.CONFIG_PATH}} ./config.json --region ap-southeast-1
+
+sudo chmod +x cynxhostagent
 
 # Restarting cynxhost agent service
 echo "Restarting cynxhost agent service..."
@@ -98,23 +100,62 @@ RESPONSE=$(curl -X POST {{.LAUNCH_SUCCESS_CALLBACK_URL}} \
 }')
 
 SCRIPT=$(echo "$RESPONSE" | jq -r '.data.Script')
-PERSISTENT_NODE_ID=$(echo "$RESPONSE" | jq -r '.data.PersistentNodeId')
+PERSISTENT_NODE_ID=$(echo "$RESPONSE" | jq '.data.PersistentNodeId | select(. != null) | tonumber')
 
 if [ "$SCRIPT" != "null" ] && [ -n "$SCRIPT" ]; then
   echo "Received base64 encoded script"
-  
+
   # Decode the base64 encoded script and execute it
-  echo "$SCRIPT" | base64 --decode | bash
+  su -c "echo \"$SCRIPT\" | base64 --decode | bash" cynxhost
 
   # Send success response
   echo "Sending success response"
   curl -X POST {{.SETUP_SUCCESS_CALLBACK_URL}} \
   -H "Content-Type: application/json" \
   -d '{
-    "persistent_node_id": "'"$PERSISTENT_NODE_ID"'",
+    "persistent_node_id": '$PERSISTENT_NODE_ID',
     "type": "{{.SETUP_SUCCESS_TYPE}}"
   }'
 
 else
 echo "No script found in response."
 fi
+
+# Setup DNS
+echo "Setting up DNS..."
+DOMAIN="{{.DOMAIN}}"
+NGINX_CONFIG="/etc/nginx/sites-available/${DOMAIN}"
+
+# Create an NGINX configuration
+echo "server {
+    # HTTP traffic (port 80)
+    listen 80;
+    server_name $DOMAIN;
+
+    location / {
+        proxy_pass http://127.0.0.1:3001;  # Replace with your HTTP service's port
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host \$host;
+        proxy_cache_bypass \$http_upgrade;
+    }
+}"> $NGINX_CONFIG
+
+# Enable the configuration and restart NGINX
+sudo ln -s $NGINX_CONFIG /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl restart nginx
+
+# Open necessary firewall ports
+echo "Opening necessary ports in the firewall..."
+sudo ufw allow 80         # HTTP
+sudo ufw allow 8000       # WebSocket
+sudo ufw allow 25565      # Minecraft
+sudo ufw reload
+
+# Final message
+echo "DNS setup and services configuration complete. Access your services at:"
+echo "HTTP: http://$DOMAIN"
+echo "WebSocket: ws://$DOMAIN:8000"
+echo "Minecraft: $DOMAIN:25565"

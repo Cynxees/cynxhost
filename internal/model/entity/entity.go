@@ -24,6 +24,7 @@ type TblScript struct {
 	StartScript    string    `gorm:"type:text;not null" json:"start_script" visibility:"2"`
 	StopScript     string    `gorm:"type:text;not null" json:"stop_script" visibility:"2"`
 	ShutdownScript string    `gorm:"type:text;not null" json:"shutdown_script" visibility:"2"`
+	ConfigPath     string    `gorm:"size:255;not null" json:"config_path" visibility:"2"`
 }
 
 type TblServerTemplate struct {
@@ -100,6 +101,7 @@ type TblPersistentNode struct {
 	InstanceTypeId   int                        `gorm:"not null" json:"instance_type_id"`
 	StorageId        int                        `gorm:"not null" json:"storage_id"`
 	ServerAlias      string                     `gorm:"size:255;not null" json:"server_alias"`
+	DnsRecordId      *string                    `gorm:"size:255" json:"dns_record_id" visibility:"10"`
 	Status           types.PersistentNodeStatus `gorm:"size:255;not null" json:"status"`
 	Owner            TblUser                    `gorm:"foreignKey:OwnerId" json:"owner"`
 	ServerTemplate   TblServerTemplate          `gorm:"foreignKey:ServerTemplateId" json:"server_template"`

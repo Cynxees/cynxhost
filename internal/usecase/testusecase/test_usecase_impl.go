@@ -24,7 +24,7 @@ func (usecase *TestUseCaseImpl) CreateDNS(resp *response.APIResponse) {
 
 	response, err := porkbunManager.CreateDNS("node1", "47.130.69.79")
 	if err != nil {
-		resp.Code = responsecode.CodePorkBunError
+		resp.Code = responsecode.CodePorkbunError
 		resp.Error = err.Error()
 		return
 	}
@@ -38,7 +38,7 @@ func (usecase *TestUseCaseImpl) RetrieveDNS(resp *response.APIResponse) {
 
 	response, err := porkbunManager.RetrieveDNSByTypeSubdomain("A", "node1")
 	if err != nil {
-		resp.Code = responsecode.CodePorkBunError
+		resp.Code = responsecode.CodePorkbunError
 		resp.Error = err.Error()
 		return
 	}
@@ -52,7 +52,7 @@ func (usecase *TestUseCaseImpl) UpdateDNS(resp *response.APIResponse) {
 
 	err := porkbunManager.UpdateDNS("A", "node1", "47.130.69.80")
 	if err != nil {
-		resp.Code = responsecode.CodePorkBunError
+		resp.Code = responsecode.CodePorkbunError
 		resp.Error = err.Error()
 		return
 	}

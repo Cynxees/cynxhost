@@ -28,12 +28,12 @@ func (database *TblServerTemplateImpl) CreateServerTemplate(ctx context.Context,
 	return ctx, serverTemplate.Id, nil
 }
 
-func (database *TblServerTemplateImpl) GetServerTemplate(ctx context.Context, key string, value string) (context.Context, entity.TblServerTemplate, error) {
-	var serverTemplate entity.TblServerTemplate
+func (database *TblServerTemplateImpl) GetServerTemplate(ctx context.Context, key string, value string) (context.Context, *entity.TblServerTemplate, error) {
+	var serverTemplate *entity.TblServerTemplate
 	err := database.DB.WithContext(ctx).Preload("Script").Where(key+" = ?", value).First(&serverTemplate).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return ctx, serverTemplate, nil
+			return ctx, nil, nil
 		}
 		return ctx, serverTemplate, err
 	}

@@ -53,9 +53,33 @@ func (usecase *PersistentNodeUseCaseImpl) LaunchCallbackPersistentNode(ctx conte
 
 	persistentNode := persistentNodes[0]
 
+	// Set DNS
+	dnsRecordId := persistentNode.DnsRecordId
+
+	if dnsRecordId == nil {
+		porkbunResp, err := usecase.porkbunManager.CreateDNS(persistentNode.ServerAlias, req.PublicIp)
+		if err != nil {
+			resp.Code = responsecode.CodePorkbunError
+			resp.Error = "Error creating DNS: " + err.Error()
+			return ctx
+		}
+
+		newId := strconv.Itoa(porkbunResp.Id)
+		dnsRecordId = &newId
+
+	} else {
+		err = usecase.porkbunManager.UpdateDNS(*dnsRecordId, persistentNode.ServerAlias, req.PublicIp)
+		if err != nil {
+			resp.Code = responsecode.CodePorkbunError
+			resp.Error = "Error updating DNS: " + err.Error()
+			return ctx
+		}
+	}
+
 	// Update persistent node
 	ctx, err = usecase.tblPersistentNode.UpdatePersistentNode(ctx, persistentNode.Id, entity.TblPersistentNode{
-		Status: types.PersistentNodeStatusSetup,
+		Status:      types.PersistentNodeStatusSetup,
+		DnsRecordId: dnsRecordId,
 	})
 	if err != nil {
 		resp.Code = responsecode.CodeTblPersistentNodeError

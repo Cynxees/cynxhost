@@ -19,7 +19,7 @@ func New(config *dependencies.ConfigPorkbun) *PorkbunManager {
 }
 
 // CreateDNS will create a new DNS record for the subdomain.
-func (p *PorkbunManager) CreateDNS(subdomain string, ip string) (*porkbunmodel.CreateDNSResponse, error) {
+func (p *PorkbunManager) CreateDNS(subdomain string, ip string) (porkbunmodel.CreateDNSResponse, error) {
 	url := "https://api.porkbun.com/api/json/v3/dns/create/" + p.Config.Domain
 
 	// Create the request body
@@ -36,21 +36,21 @@ func (p *PorkbunManager) CreateDNS(subdomain string, ip string) (*porkbunmodel.C
 	// Send the POST request
 	resp, err := helper.SendPostRequest(url, request, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create DNS record: %v", err)
+		return porkbunmodel.CreateDNSResponse{}, fmt.Errorf("failed to create DNS record: %v", err)
 	}
 
 	// Parse the response to check if the DNS creation was successful
 	var response porkbunmodel.CreateDNSResponse
 	if err := json.Unmarshal([]byte(resp), &response); err != nil {
-		return nil, fmt.Errorf("failed to parse response: %v", err)
+		return porkbunmodel.CreateDNSResponse{}, fmt.Errorf("failed to parse response: %v", err)
 	}
 
 	// Check if there is an error in the response from the Porkbun API
 	if response.Status != "SUCCESS" {
-		return &response, fmt.Errorf("failed to create DNS record, status: %s, id: %d", response.Status, response.Id)
+		return porkbunmodel.CreateDNSResponse{}, fmt.Errorf("failed to create DNS record, status: %s, id: %d", response.Status, response.Id)
 	}
 
-	return &response, nil
+	return response, nil
 }
 
 func (p *PorkbunManager) UpdateDNS(recordType string, subdomain string, newContent string) error {

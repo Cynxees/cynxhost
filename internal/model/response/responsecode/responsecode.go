@@ -20,7 +20,7 @@ const (
 	CodeEC2Error      ResponseCode = "EC2ERR"
 	CodeS3Error       ResponseCode = "S3ERR"
 	CodeRCONError     ResponseCode = "RCONERR"
-	CodePorkBunError  ResponseCode = "PBERR"
+	CodePorkbunError  ResponseCode = "PBERR"
 
 	// DB Error
 	CodeTblServerTemplateError         ResponseCode = "TBLSTE"
