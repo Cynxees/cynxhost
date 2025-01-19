@@ -2,7 +2,7 @@ package porkbunmodel
 
 type CreateDNSResponse struct {
 	Status string `json:"status"`
-	Id     string `json:"id"`
+	Id     int    `json:"id"`
 }
 
 type UpdateDNSResponse struct {

@@ -5,8 +5,10 @@ type PaginateRequest struct {
 	Size int `json:"size" validate:"required"`
 }
 
-type GetServerTemplateCategoryRequest struct {
-	Id *int `json:"id"`
+type PaginateServerTemplateCategoryRequest struct {
+	PaginateRequest
+	Id     *int   `json:"id"`
+	Filter string `json:"filter"`
 }
 
 type IdRequest struct {

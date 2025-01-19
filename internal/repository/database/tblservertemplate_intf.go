@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"cynxhost/internal/model/entity"
+	"cynxhost/internal/model/request"
 )
 
 type TblServerTemplate interface {
@@ -12,5 +13,5 @@ type TblServerTemplate interface {
 	DeleteServerTemplate(ctx context.Context, key string, value string) (context.Context, error)
 
 	GetServerTemplateCategories(ctx context.Context, key string, value string) (context.Context, []entity.TblServerTemplateCategory, error)
-	GetServerTemplateCategoryChildren(ctx context.Context, parentId *int) (context.Context, []entity.TblServerTemplateCategory, error)
+	PaginateServerTemplateCategoryChildren(ctx context.Context, req request.PaginateServerTemplateCategoryRequest) (context.Context, []entity.TblServerTemplateCategory, error)
 }

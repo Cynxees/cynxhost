@@ -41,8 +41,8 @@ func (controller *ServerTemplateController) PaginateServerTemplate(w http.Respon
 	return ctx, apiResponse
 }
 
-func (controller *ServerTemplateController) GetServerTemplateCategories(w http.ResponseWriter, r *http.Request) (context.Context, response.APIResponse) {
-	var requestBody request.GetServerTemplateCategoryRequest
+func (controller *ServerTemplateController) PaginateServerTemplateCategories(w http.ResponseWriter, r *http.Request) (context.Context, response.APIResponse) {
+	var requestBody request.PaginateServerTemplateCategoryRequest
 	var apiResponse response.APIResponse
 
 	ctx := r.Context()
@@ -53,7 +53,7 @@ func (controller *ServerTemplateController) GetServerTemplateCategories(w http.R
 		return ctx, apiResponse
 	}
 
-	controller.uc.GetServerTemplateCategories(ctx, requestBody, &apiResponse)
+	controller.uc.PaginateServerTemplateCategories(ctx, requestBody, &apiResponse)
 
 	return ctx, apiResponse
 }

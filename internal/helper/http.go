@@ -9,6 +9,8 @@ import (
 )
 
 func SendPostRequest(url string, data interface{}, headers map[string]string) (string, error) {
+
+	fmt.Println("SendPostRequest: ", url)
 	// Marshal the data into JSON
 	requestData, err := json.Marshal(data)
 	if err != nil {

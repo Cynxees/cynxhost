@@ -3,6 +3,7 @@ package tblservertemplate
 import (
 	"context"
 	"cynxhost/internal/model/entity"
+	"cynxhost/internal/model/request"
 	"cynxhost/internal/repository/database"
 
 	"gorm.io/gorm"
@@ -71,18 +72,21 @@ func (database *TblServerTemplateImpl) GetServerTemplateCategories(ctx context.C
 	return ctx, categories, nil
 }
 
-func (database *TblServerTemplateImpl) GetServerTemplateCategoryChildren(ctx context.Context, parentId *int) (context.Context, []entity.TblServerTemplateCategory, error) {
+func (database *TblServerTemplateImpl) PaginateServerTemplateCategoryChildren(ctx context.Context, req request.PaginateServerTemplateCategoryRequest) (context.Context, []entity.TblServerTemplateCategory, error) {
 	var categories []entity.TblServerTemplateCategory
 
-	if parentId == nil {
-		err := database.DB.WithContext(ctx).Where("parent_id IS NULL").Find(&categories).Error
+	size := req.Size
+	offset := (req.Page - 1) * size
+
+	if req.Id == nil {
+		err := database.DB.WithContext(ctx).Limit(size).Offset(offset).Where("parent_id IS NULL").Find(&categories).Error
 		if err != nil {
 			return ctx, nil, err
 		}
 		return ctx, categories, nil
 	}
 
-	err := database.DB.WithContext(ctx).Where("parent_id = ?", parentId).Find(&categories).Error
+	err := database.DB.WithContext(ctx).Limit(size).Offset(offset).Where("parent_id = ?", req.Id).Find(&categories).Error
 	if err != nil {
 		return ctx, nil, err
 	}

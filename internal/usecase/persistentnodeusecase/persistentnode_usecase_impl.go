@@ -12,6 +12,7 @@ import (
 	"cynxhost/internal/model/response/responsecode"
 	"cynxhost/internal/model/response/responsedata"
 	"cynxhost/internal/repository/database"
+	"cynxhost/internal/repository/externalapi/awsmanager"
 	"cynxhost/internal/usecase"
 	"encoding/base64"
 	"encoding/json"
@@ -31,12 +32,12 @@ type PersistentNodeUseCaseImpl struct {
 	tblStorage        database.TblStorage
 	tblServerTemplate database.TblServerTemplate
 
-	awsClient *dependencies.AWSClient
-	log       *logrus.Logger
-	config    *dependencies.Config
+	awsManager *awsmanager.AWSManager
+	log        *logrus.Logger
+	config     *dependencies.Config
 }
 
-func New(tblPersistentNode database.TblPersistentNode, tblInstance database.TblInstance, tblInstanceType database.TblInstanceType, tblStorage database.TblStorage, tblServerTemplate database.TblServerTemplate, awsClient *dependencies.AWSClient, logger *logrus.Logger, config *dependencies.Config) usecase.PersistentNodeUseCase {
+func New(tblPersistentNode database.TblPersistentNode, tblInstance database.TblInstance, tblInstanceType database.TblInstanceType, tblStorage database.TblStorage, tblServerTemplate database.TblServerTemplate, awsManager *awsmanager.AWSManager, logger *logrus.Logger, config *dependencies.Config) usecase.PersistentNodeUseCase {
 
 	return &PersistentNodeUseCaseImpl{
 		tblPersistentNode: tblPersistentNode,
@@ -45,9 +46,9 @@ func New(tblPersistentNode database.TblPersistentNode, tblInstance database.TblI
 		tblInstance:       tblInstance,
 		tblInstanceType:   tblInstanceType,
 
-		awsClient: awsClient,
-		log:       logger,
-		config:    config,
+		awsManager: awsManager,
+		log:        logger,
+		config:     config,
 	}
 }
 
@@ -196,7 +197,7 @@ func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Conte
 	}
 
 	// Create instance in aws
-	ec2RunInstanceOutput, err := usecase.awsClient.EC2Client.RunInstances(ctx, ec2RunInstanceInput)
+	ec2RunInstanceOutput, err := usecase.awsManager.EC2Client.RunInstances(ctx, ec2RunInstanceInput)
 	if err != nil {
 		resp.Code = responsecode.CodeEC2Error
 		resp.Error = err.Error()
@@ -254,6 +255,7 @@ func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Conte
 		StorageId:        storageId,
 		InstanceId:       &instanceId,
 		Status:           types.PersistentNodeStatusCreating,
+		ServerAlias:      req.ServerAlias,
 	}
 	ctx, _, err = usecase.tblPersistentNode.CreatePersistentNode(ctx, persistentNode)
 	if err != nil {
@@ -428,7 +430,7 @@ func (usecase *PersistentNodeUseCaseImpl) ForceShutdownPersistentNode(ctx contex
 
 func (usecase *PersistentNodeUseCaseImpl) shutdownInstance(ctx context.Context, awsInstanceId string) (*awstypes.InstanceStateChange, error) {
 
-	response, err := usecase.awsClient.EC2Client.TerminateInstances(ctx, &ec2.TerminateInstancesInput{
+	response, err := usecase.awsManager.EC2Client.TerminateInstances(ctx, &ec2.TerminateInstancesInput{
 		InstanceIds: []string{awsInstanceId},
 	})
 

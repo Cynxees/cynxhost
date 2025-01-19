@@ -2,10 +2,34 @@ package responsedata
 
 import (
 	"cynxhost/internal/model/entity"
+	"time"
 )
 
 type PaginateServerTemplateResponseData struct {
-	ServerTemplates []entity.TblServerTemplate
+	ServerTemplates []ServerTemplate
+}
+
+type ServerTemplate struct {
+	Id          int     `json:"id"`
+	Name        string  `json:"name"`
+	MinimumRam  int     `json:"minimum_ram"`
+	MinimumCpu  int     `json:"minimum_cpu"`
+	MinimumDisk int     `json:"minimum_disk"`
+	ImageUrl    *string `json:"image_url"`
+}
+
+type PaginateServerTemplateCategoriesResponseData struct {
+	ServerTemplateCategory []ServerTemplateCategory
+}
+
+type ServerTemplateCategory struct {
+	Id               int       `json:"id"`
+	Name             string    `json:"name"`
+	ParentId         int       `json:"parent_id"`
+	ImageUrl         *string   `json:"image_url"`
+	ServerTemplateId *int      `json:"server_template_id"`
+	CreatedDate      time.Time `json:"created_date"`
+	UpdatedDate      time.Time `json:"updated_date"`
 }
 
 type PaginateUserResponseData struct {
@@ -32,10 +56,6 @@ type PaginateInstanceTypeResponseData struct {
 type LaunchCallbackPersistentNodeResponseData struct {
 	PersistentNodeId int
 	Script           string
-}
-
-type GetServerTemplateCategoriesResponseData struct {
-	ServerTemplateCategory []entity.TblServerTemplateCategory
 }
 
 type GetServerTemplateResponseData struct {

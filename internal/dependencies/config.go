@@ -65,10 +65,7 @@ type Config struct {
 		Destinations []string `mapstructure:"destinations"`
 	} `mapstructure:"logging"`
 
-	Aws struct {
-		AccessKeyId     string `mapstructure:"accessKeyId"`
-		AccessKeySecret string `mapstructure:"accessKeySecret"`
-	} `mapstructure:"aws"`
+	Aws ConfigAws `mapstructure:"aws"`
 
 	Porkbun ConfigPorkbun `mapstructure:"porkbun"`
 
@@ -84,6 +81,16 @@ type Config struct {
 			Domain  string `mapstructure:"domain"`
 		} `mapstructure:"cors"`
 	} `mapstructure:"security"`
+}
+
+type ConfigAws struct {
+	AccessKeyId     string `mapstructure:"accessKeyId"`
+	AccessKeySecret string `mapstructure:"accessKeySecret"`
+	Region          string `mapstructure:"region"`
+	S3              struct {
+		Bucket string `mapstructure:"bucket"`
+		Ttl    int    `mapstructure:"ttl"`
+	} `mapstructure:"s3"`
 }
 
 type ConfigPorkbun struct {

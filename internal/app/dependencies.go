@@ -18,7 +18,6 @@ type Dependencies struct {
 
 	RedisClient    *redis.Client
 	DatabaseClient *dependencies.DatabaseClient
-	AWSClient      *dependencies.AWSClient
 
 	JWTManager *dependencies.JWTManager
 }
@@ -40,9 +39,6 @@ func NewDependencies(configPath string) *Dependencies {
 	logger.Infoln("Connecting to Redis")
 	redis := dependencies.NewRedisClient(config)
 
-	logger.Infoln("Connecting to AWS")
-	awsManager := dependencies.NewAWSClient(config.Aws.AccessKeyId, config.Aws.AccessKeySecret)
-
 	logger.Infoln("Connecting to JWT")
 	jwtManager := dependencies.NewJWTManager(config.App.Key, time.Hour*24)
 
@@ -59,7 +55,6 @@ func NewDependencies(configPath string) *Dependencies {
 		Validator:      validator,
 		RedisClient:    redis,
 		Logger:         logger,
-		AWSClient:      awsManager,
 		JWTManager:     jwtManager,
 	}
 }

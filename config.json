@@ -55,12 +55,18 @@
     },
     "cors": {
       "enabled": true,
-      "origin": "*"
+      "origin": "*",
+      "domain": "localhost"
     }
   },
   "aws": {
     "accessKeyId": "${AWS_ACCESS_KEY_ID}",
-    "accessKeySecret": "${AWS_ACCESS_KEY_SECRET}"
+    "accessKeySecret": "${AWS_ACCESS_KEY_SECRET}",
+    "region": "ap-southeast-1",
+    "s3": {
+      "bucket": "cynxhost",
+      "ttl": 3600
+    }
   },
   "porkbun": {
     "apiKey": "${PORKBUN_API_KEY}",

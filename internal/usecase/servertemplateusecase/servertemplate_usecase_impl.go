@@ -7,17 +7,20 @@ import (
 	"cynxhost/internal/model/response/responsecode"
 	"cynxhost/internal/model/response/responsedata"
 	"cynxhost/internal/repository/database"
+	"cynxhost/internal/repository/externalapi/awsmanager"
 	"cynxhost/internal/usecase"
 	"strconv"
 )
 
 type ServerTemplateUseCaseImpl struct {
 	tblServerTemplate database.TblServerTemplate
+	awsManager        *awsmanager.AWSManager
 }
 
-func New(tblServerTemplate database.TblServerTemplate) usecase.ServerTemplateUseCase {
+func New(tblServerTemplate database.TblServerTemplate, awsManager *awsmanager.AWSManager) usecase.ServerTemplateUseCase {
 	return &ServerTemplateUseCaseImpl{
 		tblServerTemplate: tblServerTemplate,
+		awsManager:        awsManager,
 	}
 }
 
@@ -29,24 +32,62 @@ func (usecase *ServerTemplateUseCaseImpl) PaginateServerTemplate(ctx context.Con
 		return
 	}
 
+	var responseServerTemplates []responsedata.ServerTemplate
+
+	for i, template := range serverTemplates {
+		url, err := usecase.awsManager.GetSignedURL(*template.ImagePath)
+		if err != nil {
+			resp.Code = responsecode.CodeAWSError
+			resp.Error = err.Error()
+			return
+		}
+		serverTemplates[i].ImagePath = url
+	}
+
 	resp.Code = responsecode.CodeSuccess
 	resp.Data = responsedata.PaginateServerTemplateResponseData{
-		ServerTemplates: serverTemplates,
+		ServerTemplates: responseServerTemplates,
 	}
 }
 
-func (usecase *ServerTemplateUseCaseImpl) GetServerTemplateCategories(ctx context.Context, req request.GetServerTemplateCategoryRequest, resp *response.APIResponse) {
+func (usecase *ServerTemplateUseCaseImpl) PaginateServerTemplateCategories(ctx context.Context, req request.PaginateServerTemplateCategoryRequest, resp *response.APIResponse) {
 
-	_, categories, err := usecase.tblServerTemplate.GetServerTemplateCategoryChildren(ctx, req.Id)
+	_, categories, err := usecase.tblServerTemplate.PaginateServerTemplateCategoryChildren(ctx, req)
 	if err != nil {
 		resp.Code = responsecode.CodeTblServerTemplateCategoryError
 		resp.Error = err.Error()
 		return
 	}
 
+	var responseServerTemplates []responsedata.ServerTemplateCategory
+
+	for _, template := range categories {
+
+		var url *string
+		if template.ImagePath != nil {
+			result, err := usecase.awsManager.GetSignedURL(*template.ImagePath)
+			if err != nil {
+				resp.Code = responsecode.CodeAWSError
+				resp.Error = err.Error()
+				return
+			}
+			url = result
+		}
+
+		responseServerTemplates = append(responseServerTemplates, responsedata.ServerTemplateCategory{
+			Id:               template.Id,
+			Name:             template.Name,
+			ParentId:         template.ParentId,
+			ImageUrl:         url,
+			ServerTemplateId: template.ServerTemplateId,
+			CreatedDate:      template.CreatedDate,
+			UpdatedDate:      template.UpdatedDate,
+		})
+	}
+
 	resp.Code = responsecode.CodeSuccess
-	resp.Data = responsedata.GetServerTemplateCategoriesResponseData{
-		ServerTemplateCategory: categories,
+	resp.Data = responsedata.PaginateServerTemplateCategoriesResponseData{
+		ServerTemplateCategory: responseServerTemplates,
 	}
 }
 

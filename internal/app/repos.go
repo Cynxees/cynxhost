@@ -11,7 +11,8 @@ import (
 	"cynxhost/internal/repository/database/tblservertemplate"
 	"cynxhost/internal/repository/database/tblstorage"
 	"cynxhost/internal/repository/database/tbluser"
-	"cynxhost/internal/repository/externalapi/porkbun"
+	"cynxhost/internal/repository/externalapi/awsmanager"
+	"cynxhost/internal/repository/externalapi/porkbunmanager"
 )
 
 type Repos struct {
@@ -25,7 +26,8 @@ type Repos struct {
 	TblParameter      database.TblParameter
 
 	JWTManager     *dependencies.JWTManager
-	PorkbunManager *porkbun.PorkbunManager
+	PorkbunManager *porkbunmanager.PorkbunManager
+	AwsManager     *awsmanager.AWSManager
 }
 
 func NewRepos(dependencies *Dependencies) *Repos {
@@ -41,6 +43,7 @@ func NewRepos(dependencies *Dependencies) *Repos {
 		TblParameter:      tblparameter.New(dependencies.DatabaseClient.Db),
 
 		JWTManager:     dependencies.JWTManager,
-		PorkbunManager: porkbun.New(&dependencies.Config.Porkbun),
+		PorkbunManager: porkbunmanager.New(&dependencies.Config.Porkbun),
+		AwsManager:     awsmanager.NewAWSManager(&dependencies.Config.Aws),
 	}
 }

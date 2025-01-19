@@ -34,18 +34,20 @@ type TblServerTemplate struct {
 	MinimumRam  int       `gorm:"not null" visibility:"1"`
 	MinimumCpu  int       `gorm:"not null" visibility:"1"`
 	MinimumDisk int       `gorm:"not null" visibility:"1"`
+	ImagePath   *string   `gorm:"size:255" visibility:"10"`
 	ScriptId    int       `gorm:"not null" visibility:"1"`
 	Script      TblScript `gorm:"foreignKey:ScriptId" visibility:"1"`
 }
 
 type TblServerTemplateCategory struct {
-	Id               int               `gorm:"primaryKey" visibility:"1"`
-	CreatedDate      time.Time         `gorm:"autoCreateTime" visibility:"1"`
-	UpdatedDate      time.Time         `gorm:"autoUpdateTime" visibility:"1"`
-	Name             string            `gorm:"size:255;not null" visibility:"1"`
-	ParentId         int               `gorm:"default:null"`
-	ServerTemplateId int               `gorm:"default:null"`
-	ServerTemplate   TblServerTemplate `gorm:"foreignKey:ServerTemplateId"`
+	Id               int                `gorm:"primaryKey" visibility:"1"`
+	CreatedDate      time.Time          `gorm:"autoCreateTime" visibility:"1"`
+	UpdatedDate      time.Time          `gorm:"autoUpdateTime" visibility:"1"`
+	Name             string             `gorm:"size:255;not null" visibility:"1"`
+	ParentId         int                `gorm:"default:null"`
+	ImagePath        *string            `gorm:"size:255" visibility:"10"`
+	ServerTemplateId *int               `gorm:"default:null"`
+	ServerTemplate   *TblServerTemplate `gorm:"foreignKey:ServerTemplateId"`
 }
 
 type TblInstanceType struct {
@@ -55,6 +57,7 @@ type TblInstanceType struct {
 	Name         string    `gorm:"size:255;not null" visibility:"1"`
 	VcpuCount    int       `gorm:"not null" visibility:"1"`
 	MemorySizeMb int       `gorm:"not null" visibility:"1"`
+	ImagePath    *string   `gorm:"size:255" visibility:"10"`
 	SpotPrice    float64   `gorm:"type:decimal(10,2);not null" visibility:"10"`
 	SellPrice    float64   `gorm:"type:decimal(10,2);not null" visibility:"1"`
 	Status       string    `gorm:"type:enum('ACTIVE', 'INACTIVE', 'HIDDEN');not null" visibility:"1"`
@@ -94,6 +97,7 @@ type TblPersistentNode struct {
 	InstanceId       *int                       `gorm:"default:null"`
 	InstanceTypeId   int                        `gorm:"not null"`
 	StorageId        int                        `gorm:"not null"`
+	ServerAlias      string                     `gorm:"size:255;not null"`
 	Status           types.PersistentNodeStatus `gorm:"size:255;not null"`
 	Owner            TblUser                    `gorm:"foreignKey:OwnerId"`
 	ServerTemplate   TblServerTemplate          `gorm:"foreignKey:ServerTemplateId"`

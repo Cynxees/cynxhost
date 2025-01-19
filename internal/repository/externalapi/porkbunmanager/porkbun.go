@@ -1,4 +1,4 @@
-package porkbun
+package porkbunmanager
 
 import (
 	"cynxhost/internal/dependencies"
@@ -47,7 +47,7 @@ func (p *PorkbunManager) CreateDNS(subdomain string, ip string) (*porkbunmodel.C
 
 	// Check if there is an error in the response from the Porkbun API
 	if response.Status != "SUCCESS" {
-		return &response, fmt.Errorf("failed to create DNS record, status: %s, id: %s", response.Status, response.Id)
+		return &response, fmt.Errorf("failed to create DNS record, status: %s, id: %d", response.Status, response.Id)
 	}
 
 	return &response, nil
@@ -109,7 +109,7 @@ func (p *PorkbunManager) RetrieveDNSByTypeSubdomain(recordType string, subdomain
 		return nil, fmt.Errorf("failed to parse response: %v", err)
 	}
 
-	if response.Status == "SUCCESS" {
+	if response.Status != "SUCCESS" {
 		return nil, fmt.Errorf("DNS record does not exist for subdomain: %s", subdomain)
 	}
 

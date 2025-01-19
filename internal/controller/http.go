@@ -4,8 +4,10 @@ import (
 	"cynxhost/internal/app"
 	"cynxhost/internal/controller/persistentnodecontroller"
 	"cynxhost/internal/controller/servertemplatecontroller"
+	"cynxhost/internal/controller/testcontroller"
 	"cynxhost/internal/controller/usercontroller"
 	"cynxhost/internal/middleware"
+	"cynxhost/internal/usecase/testusecase"
 	"errors"
 	"net/http"
 	"strconv"
@@ -59,8 +61,8 @@ func NewHttpServer(app *app.App) (*HttpServer, error) {
 
 	// Server Template
 	handleRouterFunc("server-template/paginate", serverTemplateController.PaginateServerTemplate, true)
+	handleRouterFunc("server-template/paginate-categories", serverTemplateController.PaginateServerTemplateCategories, true)
 	handleRouterFunc("server-template/detail", serverTemplateController.GetServerTemplate, true)
-	handleRouterFunc("server-template/categories", serverTemplateController.GetServerTemplateCategories, true)
 
 	// Persistent Node
 	handleRouterFunc("persistent-node/show-owned", persistentNodeController.GetAllPersistentNodesFromUser, true)
@@ -75,6 +77,14 @@ func NewHttpServer(app *app.App) (*HttpServer, error) {
 
 	// Persistent Node Dashboard
 	handleRouterFunc("persistent-node/dashboard/send-command", persistentNodeController.SendCommandPersistentNode, true)
+
+	// Testing Only
+	testUsecase := testusecase.New(app.Repos, app.Dependencies)
+	testController := testcontroller.New(testUsecase, app.Dependencies.Validator, app.Dependencies.Config)
+
+	handleRouterFunc("test/create-dns", testController.CreateDNS, false)
+	handleRouterFunc("test/retrieve-dns", testController.RetrieveDNS, false)
+	handleRouterFunc("test/update-dns", testController.UpdateDNS, false)
 
 	r.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
