@@ -61,5 +61,10 @@
   "aws": {
     "accessKeyId": "${AWS_ACCESS_KEY_ID}",
     "accessKeySecret": "${AWS_ACCESS_KEY_SECRET}"
+  },
+  "porkbun": {
+    "apiKey": "${PORKBUN_API_KEY}",
+    "secretKey": "${PORKBUN_SECRET_KEY}",
+    "domain": "cynx.buzz"
   }
 }

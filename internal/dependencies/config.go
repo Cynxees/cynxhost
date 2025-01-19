@@ -70,6 +70,8 @@ type Config struct {
 		AccessKeySecret string `mapstructure:"accessKeySecret"`
 	} `mapstructure:"aws"`
 
+	Porkbun ConfigPorkbun `mapstructure:"porkbun"`
+
 	Security struct {
 		JWT struct {
 			Secret    string `mapstructure:"secret"`
@@ -82,6 +84,12 @@ type Config struct {
 			Domain  string `mapstructure:"domain"`
 		} `mapstructure:"cors"`
 	} `mapstructure:"security"`
+}
+
+type ConfigPorkbun struct {
+	ApiKey    string `mapstructure:"apiKey"`
+	SecretKey string `mapstructure:"secretKey"`
+	Domain    string `mapstructure:"domain"`
 }
 
 func LoadConfig(path string) (*Config, error) {
