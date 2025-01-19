@@ -6,12 +6,13 @@ import (
 )
 
 type PaginateServerTemplateResponseData struct {
-	ServerTemplates []ServerTemplate
+	ServerTemplates []ServerTemplate `json:"server_templates"`
 }
 
 type ServerTemplate struct {
 	Id          int     `json:"id"`
 	Name        string  `json:"name"`
+	Description *string `json:"description"`
 	MinimumRam  int     `json:"minimum_ram"`
 	MinimumCpu  int     `json:"minimum_cpu"`
 	MinimumDisk int     `json:"minimum_disk"`
@@ -19,12 +20,13 @@ type ServerTemplate struct {
 }
 
 type PaginateServerTemplateCategoriesResponseData struct {
-	ServerTemplateCategory []ServerTemplateCategory
+	ServerTemplateCategories []ServerTemplateCategory `json:"server_template_categories"`
 }
 
 type ServerTemplateCategory struct {
 	Id               int       `json:"id"`
 	Name             string    `json:"name"`
+	Description      *string   `json:"description"`
 	ParentId         int       `json:"parent_id"`
 	ImageUrl         *string   `json:"image_url"`
 	ServerTemplateId *int      `json:"server_template_id"`
@@ -33,7 +35,7 @@ type ServerTemplateCategory struct {
 }
 
 type PaginateUserResponseData struct {
-	Users []entity.TblUser
+	Users []entity.TblUser `json:"users"`
 }
 
 type AuthResponseData struct {
@@ -42,22 +44,22 @@ type AuthResponseData struct {
 }
 
 type GetAllPersistentNodeResponseData struct {
-	PersistentNodes []entity.TblPersistentNode
+	PersistentNodes []entity.TblPersistentNode `json:"persistent_nodes"`
 }
 
 type PaginatePersistentNodeResponseData struct {
-	PersistentNodes []entity.TblPersistentNode
+	PersistentNodes []entity.TblPersistentNode `json:"persistent_nodes"`
 }
 
 type PaginateInstanceTypeResponseData struct {
-	InstanceTypes []entity.TblInstanceType
+	InstanceTypes []entity.TblInstanceType `json:"instance_types"`
 }
 
 type LaunchCallbackPersistentNodeResponseData struct {
-	PersistentNodeId int
-	Script           string
+	PersistentNodeId int    `json:"persistent_node_id"`
+	Script           string `json:"script"`
 }
 
 type GetServerTemplateResponseData struct {
-	ServerTemplate entity.TblServerTemplate
+	ServerTemplate ServerTemplate `json:"server_template"`
 }

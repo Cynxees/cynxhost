@@ -77,16 +77,21 @@ func (database *TblServerTemplateImpl) PaginateServerTemplateCategoryChildren(ct
 
 	size := req.Size
 	offset := (req.Page - 1) * size
+	keyword := req.Keyword
+
+	query := database.DB.WithContext(ctx).Limit(size).Offset(offset)
 
 	if req.Id == nil {
-		err := database.DB.WithContext(ctx).Limit(size).Offset(offset).Where("parent_id IS NULL").Find(&categories).Error
-		if err != nil {
-			return ctx, nil, err
-		}
-		return ctx, categories, nil
+		query = query.Where("parent_id IS NULL")
+	} else {
+		query = query.Where("parent_id = ?", req.Id)
 	}
 
-	err := database.DB.WithContext(ctx).Limit(size).Offset(offset).Where("parent_id = ?", req.Id).Find(&categories).Error
+	if keyword != "" {
+		query = query.Where("name LIKE ?", "%"+keyword+"%")
+	}
+
+	err := query.Find(&categories).Error
 	if err != nil {
 		return ctx, nil, err
 	}

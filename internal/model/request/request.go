@@ -1,8 +1,9 @@
 package request
 
 type PaginateRequest struct {
-	Page int `json:"page" validate:"required"`
-	Size int `json:"size" validate:"required"`
+	Page    int    `json:"page" validate:"required"`
+	Size    int    `json:"size" validate:"required"`
+	Keyword string `json:"keyword"`
 }
 
 type PaginateServerTemplateCategoryRequest struct {

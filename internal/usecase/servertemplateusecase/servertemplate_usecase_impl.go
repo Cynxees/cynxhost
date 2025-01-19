@@ -77,6 +77,7 @@ func (usecase *ServerTemplateUseCaseImpl) PaginateServerTemplateCategories(ctx c
 		responseServerTemplates = append(responseServerTemplates, responsedata.ServerTemplateCategory{
 			Id:               template.Id,
 			Name:             template.Name,
+			Description:      template.Description,
 			ParentId:         template.ParentId,
 			ImageUrl:         url,
 			ServerTemplateId: template.ServerTemplateId,
@@ -87,7 +88,7 @@ func (usecase *ServerTemplateUseCaseImpl) PaginateServerTemplateCategories(ctx c
 
 	resp.Code = responsecode.CodeSuccess
 	resp.Data = responsedata.PaginateServerTemplateCategoriesResponseData{
-		ServerTemplateCategory: responseServerTemplates,
+		ServerTemplateCategories: responseServerTemplates,
 	}
 }
 
@@ -99,8 +100,30 @@ func (usecase *ServerTemplateUseCaseImpl) GetServerTemplate(ctx context.Context,
 		return
 	}
 
+	var signedUrl *string
+
+	if template.ImagePath != nil {
+		url, err := usecase.awsManager.GetSignedURL(*template.ImagePath)
+		if err != nil {
+			resp.Code = responsecode.CodeS3Error
+			resp.Error = err.Error()
+			return
+		}
+		signedUrl = url
+	}
+
+	serverTemplateResponse := responsedata.ServerTemplate{
+		Id:          template.Id,
+		Name:        template.Name,
+		Description: template.Description,
+		MinimumRam:  template.MinimumRam,
+		MinimumCpu:  template.MinimumCpu,
+		MinimumDisk: template.MinimumDisk,
+		ImageUrl:    signedUrl,
+	}
+
 	resp.Code = responsecode.CodeSuccess
 	resp.Data = responsedata.GetServerTemplateResponseData{
-		ServerTemplate: template,
+		ServerTemplate: serverTemplateResponse,
 	}
 }
