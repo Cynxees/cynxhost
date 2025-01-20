@@ -145,7 +145,6 @@ func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Conte
 		return ctx
 	}
 
-	// Generate hash
 	hash := fmt.Sprintf("%d-%d-%s", contextUser.Id, req.InstanceTypeId, req.Name)
 	callbackBaseUrl := fmt.Sprintf("%s:%d", usecase.config.App.PrivateIp, usecase.config.App.Port)
 
@@ -162,13 +161,47 @@ func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Conte
 		"CONFIG_PATH":                 serverTemplate.Script.ConfigPath,
 	}
 
-	userData, err := helper.ReplacePlaceholders(string(param.StaticParam.ParamAwsLaunchScript), userDataVariables)
+	reqVariableMap := make(map[string]string)
+	for _, reqVar := range req.Variables {
+		reqVariableMap[reqVar.Name] = reqVar.Value
+	}
+
+	//Get variables
+	for _, variable := range serverTemplate.Script.Variables {
+
+		fmt.Println("Variable name: ", variable.Name)
+
+		// Check if the variable name exists in the request
+		if reqValue, found := reqVariableMap[variable.Name]; found {
+
+			fmt.Println("Request value: ", reqValue)
+
+			// Find the matching content by name
+			for _, content := range variable.Content {
+				if content.Name != reqValue {
+					continue
+				}
+
+				fmt.Println("Found value: ", content.Value)
+
+				// Add each key-value pair from valueMap into userDataVariables
+				for key, val := range content.Value {
+					userDataVariables[helper.FormatServerTemplateVariableKey(key)] = fmt.Sprintf("%v", val) // Convert value to string
+				}
+
+				break
+			}
+		}
+	}
+
+	userData, err := helper.ReplacePlaceholders(string(serverTemplate.Script.SetupScript), userDataVariables)
 	if err != nil {
 		resp.Code = responsecode.CodeInternalError
 		resp.Error = err.Error()
 		return ctx
 	}
 	usecase.log.Infoln("User data: ", userData)
+	return ctx
 	encodedUserData := base64.StdEncoding.EncodeToString([]byte(userData))
 
 	usecase.log.Infoln("encoded user data: ", encodedUserData)

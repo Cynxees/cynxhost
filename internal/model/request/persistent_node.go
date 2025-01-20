@@ -3,11 +3,17 @@ package request
 import contextmodel "cynxhost/internal/model/context"
 
 type CreatePersistentNodeRequest struct {
-	ServerTemplateId int    `json:"server_template_id" validate:"required"`
-	StorageSizeMb    int    `json:"storage_size_mb" validate:"required"`
-	InstanceTypeId   int    `json:"instance_type_id" validate:"required"`
-	ServerAlias      string `json:"server_alias" validate:"required"`
-	Name             string `json:"name" validate:"required"`
+	ServerTemplateId int                            `json:"server_template_id" validate:"required"`
+	StorageSizeMb    int                            `json:"storage_size_mb" validate:"required"`
+	InstanceTypeId   int                            `json:"instance_type_id" validate:"required"`
+	ServerAlias      string                         `json:"server_alias" validate:"required"`
+	Name             string                         `json:"name" validate:"required"`
+	Variables        []ServerTemplateScriptVariable `json:"variables"`
+}
+
+type ServerTemplateScriptVariable struct {
+	Name  string `json:"name" validate:"required"`
+	Value string `json:"value" validate:"required"`
 }
 
 type LaunchCallbackPersistentNodeRequest struct {

@@ -60,9 +60,9 @@ func NewHttpServer(app *app.App) (*HttpServer, error) {
 	handleRouterFunc("user/profile", userController.GetProfile, true)
 
 	// Server Template
-	handleRouterFunc("server-template/paginate", serverTemplateController.PaginateServerTemplate, true)
-	handleRouterFunc("server-template/paginate-categories", serverTemplateController.PaginateServerTemplateCategories, true)
-	handleRouterFunc("server-template/detail", serverTemplateController.GetServerTemplate, true)
+	handleRouterFunc("server-template/paginate", serverTemplateController.PaginateServerTemplate, false)
+	handleRouterFunc("server-template/paginate-categories", serverTemplateController.PaginateServerTemplateCategories, false)
+	handleRouterFunc("server-template/detail", serverTemplateController.GetServerTemplate, false)
 
 	// Persistent Node
 	handleRouterFunc("persistent-node/show-owned", persistentNodeController.GetAllPersistentNodesFromUser, true)
@@ -76,7 +76,7 @@ func NewHttpServer(app *app.App) (*HttpServer, error) {
 	handleRouterFunc("persistent-node/callback/update-status", persistentNodeController.StatusCallbackPersistentNode, false)
 
 	// Persistent Node Dashboard
-	handleRouterFunc("persistent-node/dashboard/send-command", persistentNodeController.SendCommandPersistentNode, true)
+	// handleRouterFunc("persistent-node/dashboard/send-command", persistentNodeController.SendCommandPersistentNode, true)
 
 	// Testing Only
 	testUsecase := testusecase.New(app.Repos, app.Dependencies)

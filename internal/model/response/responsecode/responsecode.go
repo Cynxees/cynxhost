@@ -12,6 +12,7 @@ const (
 	CodeNotFound            ResponseCode = "NF"
 	CodeInvalidCredentials  ResponseCode = "IC"
 	CodeForbidden           ResponseCode = "FB"
+	CodeFailJSON            ResponseCode = "FJ"
 
 	// Internal
 	CodeJwtError      ResponseCode = "JWTERR"

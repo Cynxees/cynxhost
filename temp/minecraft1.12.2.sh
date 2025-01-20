@@ -5,7 +5,7 @@ JAVA_SWITCH_SCRIPT="/home/cynxhost/scripts/switch_java_to_version.sh"
 MC_SERVER_DIR="/home/cynxhost/node"
 MC_VERSION="1.12.2"
 MC_SERVER_JAR="/home/cynxhost/node/server.jar"
-MC_SERVER_URL="https://launcher.mojang.com/mc/game/$MC_VERSION/server/886945bfb2b978778c3a0288fd7fab09d315b25f/server.jar"
+MC_SERVER_URL="{{.VARIABLE_URL}}"
 EULA_FILE="$MC_SERVER_DIR/eula.txt"
 PROPERTIES_FILE="$MC_SERVER_DIR/server.properties"
 

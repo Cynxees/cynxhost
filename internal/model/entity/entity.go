@@ -14,45 +14,6 @@ type TblUser struct {
 	UpdatedDate time.Time `gorm:"autoUpdateTime" json:"updated_date" visibility:"1"`
 }
 
-type TblScript struct {
-	Id             int       `gorm:"primaryKey" json:"id" visibility:"1"`
-	CreatedDate    time.Time `gorm:"autoCreateTime" json:"created_date" visibility:"1"`
-	UpdatedDate    time.Time `gorm:"autoUpdateTime" json:"updated_date" visibility:"1"`
-	Name           string    `gorm:"size:255;not null" json:"name" visibility:"1"`
-	Variables      string    `gorm:"type:json;not null" json:"variables" visibility:"2"`
-	SetupScript    string    `gorm:"type:text;not null" json:"setup_script" visibility:"2"`
-	StartScript    string    `gorm:"type:text;not null" json:"start_script" visibility:"2"`
-	StopScript     string    `gorm:"type:text;not null" json:"stop_script" visibility:"2"`
-	ShutdownScript string    `gorm:"type:text;not null" json:"shutdown_script" visibility:"2"`
-	ConfigPath     string    `gorm:"size:255;not null" json:"config_path" visibility:"2"`
-}
-
-type TblServerTemplate struct {
-	Id          int       `gorm:"primaryKey" json:"id" visibility:"1"`
-	CreatedDate time.Time `gorm:"autoCreateTime" json:"created_date" visibility:"1"`
-	UpdatedDate time.Time `gorm:"autoUpdateTime" json:"updated_date" visibility:"1"`
-	Name        string    `gorm:"size:255;not null" json:"name" visibility:"1"`
-	Description *string   `gorm:"type:text" json:"description" visibility:"2"`
-	MinimumRam  int       `gorm:"not null" json:"minimum_ram" visibility:"1"`
-	MinimumCpu  int       `gorm:"not null" json:"minimum_cpu" visibility:"1"`
-	MinimumDisk int       `gorm:"not null" json:"minimum_disk" visibility:"1"`
-	ImagePath   *string   `gorm:"size:255" json:"image_path" visibility:"10"`
-	ScriptId    int       `gorm:"not null" json:"script_id" visibility:"1"`
-	Script      TblScript `gorm:"foreignKey:ScriptId" json:"script" visibility:"1"`
-}
-
-type TblServerTemplateCategory struct {
-	Id               int                `gorm:"primaryKey" json:"id" visibility:"1"`
-	CreatedDate      time.Time          `gorm:"autoCreateTime" json:"created_date" visibility:"1"`
-	UpdatedDate      time.Time          `gorm:"autoUpdateTime" json:"updated_date" visibility:"1"`
-	Name             string             `gorm:"size:255;not null" json:"name" visibility:"1"`
-	Description      *string            `gorm:"type:text" json:"description" visibility:"2"`
-	ParentId         int                `gorm:"default:null" json:"parent_id"`
-	ImagePath        *string            `gorm:"size:255" json:"image_path" visibility:"10"`
-	ServerTemplateId *int               `gorm:"default:null" json:"server_template_id"`
-	ServerTemplate   *TblServerTemplate `gorm:"foreignKey:ServerTemplateId" json:"server_template"`
-}
-
 type TblInstanceType struct {
 	Id           int       `gorm:"primaryKey" json:"id" visibility:"1"`
 	CreatedDate  time.Time `gorm:"autoCreateTime" json:"created_date" visibility:"1"`

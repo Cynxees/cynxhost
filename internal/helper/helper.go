@@ -78,3 +78,7 @@ func GetClientIP(r *http.Request) string {
 	}
 	return ip
 }
+
+func FormatServerTemplateVariableKey(key string) string {
+	return "VARIABLE_" + strings.ToUpper(key)
+}

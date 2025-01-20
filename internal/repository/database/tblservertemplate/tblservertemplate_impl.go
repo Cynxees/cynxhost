@@ -87,8 +87,12 @@ func (database *TblServerTemplateImpl) PaginateServerTemplateCategoryChildren(ct
 		query = query.Where("parent_id = ?", req.Id)
 	}
 
-	if keyword != "" {
-		query = query.Where("name LIKE ?", "%"+keyword+"%")
+	if keyword != nil {
+		query = query.Where("name LIKE ?", "%"+*keyword+"%")
+	}
+
+	if req.Sort != nil {
+		query = query.Order("name " + *req.Sort)
 	}
 
 	err := query.Find(&categories).Error
