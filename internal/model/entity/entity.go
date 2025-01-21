@@ -2,6 +2,10 @@ package entity
 
 import (
 	"cynxhost/internal/constant/types"
+	"cynxhost/internal/model/request"
+	"database/sql/driver"
+	"encoding/json"
+	"errors"
 	"time"
 )
 
@@ -69,6 +73,7 @@ type TblPersistentNode struct {
 	Instance         *TblInstance               `gorm:"foreignKey:InstanceId" json:"instance"`
 	InstanceType     TblInstanceType            `gorm:"foreignKey:InstanceTypeId" json:"instance_type"`
 	Storage          TblStorage                 `gorm:"foreignKey:StorageId" json:"storage"`
+	Variables        JSONMap                    `gorm:"type:json" json:"variables"`
 }
 
 type TblParameter struct {
@@ -77,4 +82,47 @@ type TblParameter struct {
 	Desc        string    `gorm:"type:text;not null" json:"desc"`
 	CreatedDate time.Time `gorm:"autoCreateTime" json:"created_date"`
 	UpdatedDate time.Time `gorm:"autoUpdateTime" json:"updated_date"`
+}
+
+type JSONMap []map[string]string
+
+func (j JSONMap) Value() (driver.Value, error) {
+	if j == nil {
+		return nil, nil
+	}
+	return json.Marshal(j)
+}
+
+func (j *JSONMap) Scan(value interface{}) error {
+	if value == nil {
+		*j = nil
+		return nil
+	}
+
+	bytes, ok := value.([]byte)
+	if !ok {
+		return errors.New("failed to scan JSONMap: value is not []byte")
+	}
+
+	return json.Unmarshal(bytes, j)
+}
+
+func (j *JSONMap) ToScriptVariables() ([]request.ServerTemplateScriptVariable, error) {
+	if j == nil {
+		return nil, errors.New("JSONMap is nil")
+	}
+
+	var result []request.ServerTemplateScriptVariable
+
+	// Iterate over the slice of maps
+	for _, item := range *j {
+
+		variable := request.ServerTemplateScriptVariable{
+			Name:  item["name"],
+			Value: item["value"],
+		}
+		result = append(result, variable)
+	}
+
+	return result, nil
 }

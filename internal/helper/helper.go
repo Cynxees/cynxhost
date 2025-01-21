@@ -2,6 +2,8 @@ package helper
 
 import (
 	"bytes"
+	"cynxhost/internal/model/entity"
+	"cynxhost/internal/model/request"
 	"cynxhost/internal/model/response/responsecode"
 	"encoding/json"
 	"errors"
@@ -81,4 +83,91 @@ func GetClientIP(r *http.Request) string {
 
 func FormatServerTemplateVariableKey(key string) string {
 	return "VARIABLE_" + strings.ToUpper(key)
+}
+
+func FormatScriptVariables(scriptVariables entity.Variables, variableInput []request.ServerTemplateScriptVariable) (map[string]string, error) {
+	result := make(map[string]string)
+	reqVariableMap := make(map[string]string)
+	missingVariables := []string{}
+
+	// Map input variables by name for easy lookup
+	for _, reqVar := range variableInput {
+		fmt.Println("Mapping: ", reqVar.Name, " - ", reqVar.Value)
+		reqVariableMap[reqVar.Name] = reqVar.Value
+	}
+
+	fmt.Println("Request variables: ", reqVariableMap)
+	fmt.Println("Script variables: ", scriptVariables)
+	// Process each required variable
+	for _, variable := range scriptVariables {
+		fmt.Println("Variable name: ", variable.Name)
+
+		// Check if the variable name exists in the input
+		reqValue, found := reqVariableMap[variable.Name]
+		if !found {
+			// Add to missing variables if not found
+			missingVariables = append(missingVariables, variable.Name)
+			continue
+		}
+
+		fmt.Println("Request value: ", reqValue)
+
+		// Check if the value matches any content in the variable
+		valueSet := false
+		for _, content := range variable.Content {
+			if content.Name == reqValue {
+				fmt.Println("Found value: ", content.Value)
+
+				// Add each key-value pair from content.Value into the result
+				for key, val := range content.Value {
+					result[FormatServerTemplateVariableKey(key)] = fmt.Sprintf("%v", val) // Convert value to string
+				}
+
+				valueSet = true
+				break
+			}
+		}
+
+		// If no matching content was found, treat it as missing
+		if !valueSet {
+			missingVariables = append(missingVariables, variable.Name)
+		}
+	}
+
+	// Return an error if any variables are missing
+	if len(missingVariables) > 0 {
+		return nil, fmt.Errorf("missing or invalid variables: %v", missingVariables)
+	}
+
+	return result, nil
+}
+
+func StructToMap(data interface{}) (map[string]interface{}, error) {
+	var result map[string]interface{}
+
+	dataBytes, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := json.Unmarshal(dataBytes, &result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func StructToMapStringArray(data interface{}) ([]map[string]string, error) {
+	var result []map[string]string
+
+	dataBytes, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := json.Unmarshal(dataBytes, &result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }

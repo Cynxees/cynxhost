@@ -29,7 +29,7 @@ func (database *TblPersistentNodeImpl) CreatePersistentNode(ctx context.Context,
 
 func (database *TblPersistentNodeImpl) GetPersistentNodes(ctx context.Context, key string, value string) (context.Context, []entity.TblPersistentNode, error) {
 	var persistentNodes []entity.TblPersistentNode
-	err := database.DB.WithContext(ctx).Preload("Instance").Where(key+" = ?", value).Find(&persistentNodes).Error
+	err := database.DB.WithContext(ctx).Preload("Instance").Preload("ServerTemplate.Script").Where(key+" = ?", value).Find(&persistentNodes).Error
 	if err != nil {
 		return ctx, nil, err
 	}

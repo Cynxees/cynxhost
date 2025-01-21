@@ -145,6 +145,59 @@ func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Conte
 		return ctx
 	}
 
+	// Change struct to map
+	marshalledVariables, err := helper.StructToMapStringArray(req.Variables)
+
+	// Check if server variable is valid
+	_, err = helper.FormatScriptVariables(serverTemplate.Script.Variables, req.Variables)
+	if err != nil {
+		resp.Code = responsecode.CodeFailJSON
+		resp.Error = err.Error()
+		return ctx
+	}
+
+	//=========================================================================================================
+	persistentNodee := entity.TblPersistentNode{
+		Name:             req.Name,
+		OwnerId:          contextUser.Id,
+		ServerTemplateId: req.ServerTemplateId,
+		InstanceTypeId:   req.InstanceTypeId,
+		StorageId:        41,
+		Status:           types.PersistentNodeStatusCreating,
+		ServerAlias:      req.ServerAlias,
+		Variables:        marshalledVariables,
+	}
+	ctx, id, err := usecase.tblPersistentNode.CreatePersistentNode(ctx, persistentNodee)
+	if err != nil {
+		resp.Code = responsecode.CodeTblPersistentNodeError
+		resp.Error = err.Error()
+		return ctx
+	}
+
+	_, persistentNodeee, _ := usecase.tblPersistentNode.GetPersistentNodes(ctx, "id", strconv.Itoa(id))
+
+	node := persistentNodeee[0]
+
+	vari, err := node.Variables.ToScriptVariables()
+	if err != nil {
+		resp.Code = responsecode.CodeFailJSON
+		resp.Error = err.Error()
+		return ctx
+	}
+
+	fmt.Println("Variables: ", vari)
+	result, err := helper.FormatScriptVariables(node.ServerTemplate.Script.Variables, vari)
+	if err != nil {
+		resp.Code = responsecode.CodeFailJSON
+		resp.Error = err.Error()
+		return ctx
+	}
+
+	fmt.Println("Result: ", result)
+
+	return ctx
+	//=========================================================================================================
+
 	hash := fmt.Sprintf("%d-%d-%s", contextUser.Id, req.InstanceTypeId, req.Name)
 	callbackBaseUrl := fmt.Sprintf("%s:%d", usecase.config.App.PrivateIp, usecase.config.App.Port)
 
@@ -161,39 +214,6 @@ func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Conte
 		"CONFIG_PATH":                 serverTemplate.Script.ConfigPath,
 	}
 
-	reqVariableMap := make(map[string]string)
-	for _, reqVar := range req.Variables {
-		reqVariableMap[reqVar.Name] = reqVar.Value
-	}
-
-	//Get variables
-	for _, variable := range serverTemplate.Script.Variables {
-
-		fmt.Println("Variable name: ", variable.Name)
-
-		// Check if the variable name exists in the request
-		if reqValue, found := reqVariableMap[variable.Name]; found {
-
-			fmt.Println("Request value: ", reqValue)
-
-			// Find the matching content by name
-			for _, content := range variable.Content {
-				if content.Name != reqValue {
-					continue
-				}
-
-				fmt.Println("Found value: ", content.Value)
-
-				// Add each key-value pair from valueMap into userDataVariables
-				for key, val := range content.Value {
-					userDataVariables[helper.FormatServerTemplateVariableKey(key)] = fmt.Sprintf("%v", val) // Convert value to string
-				}
-
-				break
-			}
-		}
-	}
-
 	userData, err := helper.ReplacePlaceholders(string(serverTemplate.Script.SetupScript), userDataVariables)
 	if err != nil {
 		resp.Code = responsecode.CodeInternalError
@@ -201,7 +221,6 @@ func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Conte
 		return ctx
 	}
 	usecase.log.Infoln("User data: ", userData)
-	return ctx
 	encodedUserData := base64.StdEncoding.EncodeToString([]byte(userData))
 
 	usecase.log.Infoln("encoded user data: ", encodedUserData)
@@ -310,6 +329,7 @@ func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Conte
 		InstanceId:       &instanceId,
 		Status:           types.PersistentNodeStatusCreating,
 		ServerAlias:      req.ServerAlias,
+		Variables:        marshalledVariables,
 	}
 	ctx, _, err = usecase.tblPersistentNode.CreatePersistentNode(ctx, persistentNode)
 	if err != nil {
