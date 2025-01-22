@@ -1,6 +1,7 @@
 package responsedata
 
 import (
+	"cynxhost/internal/constant/types"
 	"cynxhost/internal/model/entity"
 	"time"
 )
@@ -10,13 +11,24 @@ type PaginateServerTemplateResponseData struct {
 }
 
 type ServerTemplate struct {
-	Id          int     `json:"id"`
-	Name        string  `json:"name"`
-	Description *string `json:"description"`
-	MinimumRam  int     `json:"minimum_ram"`
-	MinimumCpu  int     `json:"minimum_cpu"`
-	MinimumDisk int     `json:"minimum_disk"`
-	ImageUrl    *string `json:"image_url"`
+	Id          int              `json:"id"`
+	Name        string           `json:"name"`
+	Description *string          `json:"description"`
+	MinimumRam  int              `json:"minimum_ram"`
+	MinimumCpu  int              `json:"minimum_cpu"`
+	MinimumDisk int              `json:"minimum_disk"`
+	ImageUrl    *string          `json:"image_url"`
+	Variables   []ScriptVariable `json:"variables"`
+}
+
+type ScriptVariable struct {
+	Name    string                   `json:"name"`
+	Type    types.ScriptVariableType `json:"type"`
+	Content []ScriptVariableContent  `json:"content"`
+}
+
+type ScriptVariableContent struct {
+	Name string `json:"name"`
 }
 
 type PaginateServerTemplateCategoriesResponseData struct {

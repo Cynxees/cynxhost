@@ -112,6 +112,26 @@ func (usecase *ServerTemplateUseCaseImpl) GetServerTemplate(ctx context.Context,
 		signedUrl = url
 	}
 
+	var variablesResponse []responsedata.ScriptVariable
+
+	if template.Script.Variables != nil {
+		variables := template.Script.Variables
+
+		for _, variable := range variables {
+			var contentResponse []responsedata.ScriptVariableContent
+			for _, content := range variable.Content {
+				contentResponse = append(contentResponse, responsedata.ScriptVariableContent{
+					Name: content.Name,
+				})
+			}
+			variablesResponse = append(variablesResponse, responsedata.ScriptVariable{
+				Name:    variable.Name,
+				Type:    variable.Type,
+				Content: contentResponse,
+			})
+		}
+	}
+
 	serverTemplateResponse := responsedata.ServerTemplate{
 		Id:          template.Id,
 		Name:        template.Name,
@@ -120,6 +140,7 @@ func (usecase *ServerTemplateUseCaseImpl) GetServerTemplate(ctx context.Context,
 		MinimumCpu:  template.MinimumCpu,
 		MinimumDisk: template.MinimumDisk,
 		ImageUrl:    signedUrl,
+		Variables:   variablesResponse,
 	}
 
 	resp.Code = responsecode.CodeSuccess
