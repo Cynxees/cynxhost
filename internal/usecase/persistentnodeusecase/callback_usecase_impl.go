@@ -3,6 +3,7 @@ package persistentnodeusecase
 import (
 	"context"
 	"cynxhost/internal/constant/types"
+	"cynxhost/internal/helper"
 	"cynxhost/internal/model/entity"
 	"cynxhost/internal/model/request"
 	"cynxhost/internal/model/response"
@@ -52,6 +53,23 @@ func (usecase *PersistentNodeUseCaseImpl) LaunchCallbackPersistentNode(ctx conte
 	}
 
 	persistentNode := persistentNodes[0]
+
+	variables, err := persistentNode.Variables.ToScriptVariables()
+	if err != nil {
+		resp.Code = responsecode.CodeFailJSON
+		resp.Error = err.Error()
+		return ctx
+	}
+
+	result, err := helper.FormatScriptVariables(persistentNode.ServerTemplate.Script.Variables, variables)
+	if err != nil {
+		resp.Code = responsecode.CodeFailJSON
+		resp.Error = err.Error()
+		return ctx
+	}
+
+	script, err := helper.ReplacePlaceholders(string(persistentNode.ServerTemplate.Script.SetupScript), result)
+	encodedScript := base64.StdEncoding.EncodeToString([]byte(script))
 
 	// Set DNS
 	dnsRecordId := persistentNode.DnsRecordId
@@ -105,16 +123,6 @@ func (usecase *PersistentNodeUseCaseImpl) LaunchCallbackPersistentNode(ctx conte
 		resp.Code = responsecode.CodeTblStorageError
 		resp.Error = "Error updating storage: " + err.Error()
 	}
-
-	// Get Script
-	ctx, serverTemplate, err := usecase.tblServerTemplate.GetServerTemplate(ctx, "id", strconv.Itoa(persistentNode.ServerTemplateId))
-	if err != nil {
-		resp.Code = responsecode.CodeTblServerTemplateError
-		resp.Error = "Error getting server template: " + err.Error()
-		return ctx
-	}
-
-	encodedScript := base64.StdEncoding.EncodeToString([]byte(serverTemplate.Script.SetupScript))
 
 	resp.Code = responsecode.CodeSuccess
 	resp.Data = responsedata.LaunchCallbackPersistentNodeResponseData{

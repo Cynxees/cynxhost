@@ -156,48 +156,6 @@ func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Conte
 		return ctx
 	}
 
-	//=========================================================================================================
-	persistentNodee := entity.TblPersistentNode{
-		Name:             req.Name,
-		OwnerId:          contextUser.Id,
-		ServerTemplateId: req.ServerTemplateId,
-		InstanceTypeId:   req.InstanceTypeId,
-		StorageId:        41,
-		Status:           types.PersistentNodeStatusCreating,
-		ServerAlias:      req.ServerAlias,
-		Variables:        marshalledVariables,
-	}
-	ctx, id, err := usecase.tblPersistentNode.CreatePersistentNode(ctx, persistentNodee)
-	if err != nil {
-		resp.Code = responsecode.CodeTblPersistentNodeError
-		resp.Error = err.Error()
-		return ctx
-	}
-
-	_, persistentNodeee, _ := usecase.tblPersistentNode.GetPersistentNodes(ctx, "id", strconv.Itoa(id))
-
-	node := persistentNodeee[0]
-
-	vari, err := node.Variables.ToScriptVariables()
-	if err != nil {
-		resp.Code = responsecode.CodeFailJSON
-		resp.Error = err.Error()
-		return ctx
-	}
-
-	fmt.Println("Variables: ", vari)
-	result, err := helper.FormatScriptVariables(node.ServerTemplate.Script.Variables, vari)
-	if err != nil {
-		resp.Code = responsecode.CodeFailJSON
-		resp.Error = err.Error()
-		return ctx
-	}
-
-	fmt.Println("Result: ", result)
-
-	return ctx
-	//=========================================================================================================
-
 	hash := fmt.Sprintf("%d-%d-%s", contextUser.Id, req.InstanceTypeId, req.Name)
 	callbackBaseUrl := fmt.Sprintf("%s:%d", usecase.config.App.PrivateIp, usecase.config.App.Port)
 
