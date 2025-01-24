@@ -12,6 +12,8 @@ import (
 	"encoding/base64"
 	"fmt"
 	"strconv"
+
+	awstypes "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 )
 
 func (usecase *PersistentNodeUseCaseImpl) LaunchCallbackPersistentNode(ctx context.Context, req request.LaunchCallbackPersistentNodeRequest, resp *response.APIResponse) context.Context {
@@ -180,6 +182,87 @@ func (usecase *PersistentNodeUseCaseImpl) StatusCallbackPersistentNode(ctx conte
 		resp.Code = responsecode.CodeTblPersistentNodeError
 		resp.Error = "Error updating persistent node: " + err.Error()
 	}
+
+	resp.Code = responsecode.CodeSuccess
+	return ctx
+}
+
+func (usecase *PersistentNodeUseCaseImpl) ShutdownCallbackPersistentNode(ctx context.Context, req request.ShutdownCallbackPersistentNodeRequest, resp *response.APIResponse) context.Context {
+
+	_, persistentNodes, err := usecase.tblPersistentNode.GetPersistentNodes(ctx, "id", strconv.Itoa(req.PersistentNodeId))
+	if err != nil {
+		resp.Code = responsecode.CodeTblPersistentNodeError
+		resp.Error = err.Error()
+
+		return ctx
+	}
+
+	if len(persistentNodes) == 0 {
+		resp.Code = responsecode.CodeNotFound
+		resp.Error = "Persistent node not found"
+
+		return ctx
+	}
+
+	persistentNode := persistentNodes[0]
+
+	if persistentNode.Instance == nil {
+		resp.Code = responsecode.CodeNotFound
+		resp.Error = "No Instance Running instance found"
+
+		return ctx
+	}
+
+	// Check if the persistent node ip is the same
+	if persistentNode.Instance.PrivateIp != req.ClientIp && persistentNode.Instance.PublicIp != req.ClientIp {
+		resp.Code = responsecode.CodeForbidden
+		resp.Error = "You are not allowed to access this persistent node"
+
+		return ctx
+	}
+
+	// Shutdown the instance
+	terminatedInstance, err := usecase.shutdownInstance(ctx, &persistentNode)
+	if err != nil {
+		resp.Code = responsecode.CodeEC2Error
+		resp.Error = err.Error()
+
+		return ctx
+	}
+
+	if terminatedInstance.CurrentState.Name == awstypes.InstanceStateNameTerminated || terminatedInstance.CurrentState.Name == awstypes.InstanceStateNameShuttingDown {
+		resp.Code = responsecode.CodeNotAllowed
+		resp.Error = "Instance already terminated or is shutting down"
+		return ctx
+	}
+
+	// Remove instance from persistent node
+	ctx, err = usecase.tblPersistentNode.UpdatePersistentNode(ctx, persistentNode.Id, entity.TblPersistentNode{
+		InstanceId: nil,
+		Status:     types.PersistentNodeStatusShutdown,
+	})
+
+	if err != nil {
+		resp.Code = responsecode.CodeTblPersistentNodeError
+		resp.Error = err.Error()
+		return ctx
+	}
+
+	// Delete the instance
+	if persistentNode.InstanceId == nil {
+		resp.Code = responsecode.CodeNotFound
+		resp.Error = "No instance found"
+		return ctx
+	}
+
+	ctx, err = usecase.tblInstance.DeleteInstance(ctx, *persistentNode.InstanceId)
+	if err != nil {
+		resp.Code = responsecode.CodeTblInstanceError
+		resp.Error = err.Error()
+		return ctx
+	}
+
+	// Change the status of the persistent node ( TODO )
 
 	resp.Code = responsecode.CodeSuccess
 	return ctx

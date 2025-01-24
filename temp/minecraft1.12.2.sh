@@ -53,9 +53,6 @@ else
     fi
 fi
 
-# Create log files
-AGENT_DIR="/home/cynxhost/cynxhost-agent"
-AGENT_OUTPUT_FILE="$AGENT_DIR/output.log"
 SESSION_NAME="cynxhost-node"
 
 mkdir $AGENT_DIR
@@ -63,4 +60,4 @@ touch $AGENT_OUTPUT_FILE
 
 # Start the Minecraft server
 echo "Starting Minecraft server..."
-tmux new-session -d -s $SESSION_NAME "java -Xmx1024M -Xms1024M -jar '$MC_SERVER_JAR' nogui > '$AGENT_OUTPUT_FILE' 2>&1"
+tmux new-session -d -s $SESSION_NAME "java -Xmx1024M -Xms1024M -jar '$MC_SERVER_JAR' nogui

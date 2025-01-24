@@ -74,3 +74,20 @@ func (controller *ServerTemplateController) GetServerTemplate(w http.ResponseWri
 
 	return ctx, apiResponse
 }
+
+func (controller *ServerTemplateController) ValidateServerTemplateVariables(w http.ResponseWriter, r *http.Request) (context.Context, response.APIResponse) {
+	var requestBody request.ValidateServerTemplateVariablesRequest
+	var apiResponse response.APIResponse
+
+	ctx := r.Context()
+
+	if err := helper.DecodeAndValidateRequest(r, &requestBody, controller.validator); err != nil {
+		apiResponse.Code = responsecode.CodeValidationError
+		apiResponse.Error = err.Error()
+		return ctx, apiResponse
+	}
+
+	controller.uc.ValidateServerTemplateVariables(ctx, requestBody, &apiResponse)
+
+	return ctx, apiResponse
+}

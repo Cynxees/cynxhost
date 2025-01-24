@@ -7,8 +7,3 @@ type ParamAwsNodeId struct {
 	KeyPairName     string `json:"keypair_name"`
 	VpcId           string `json:"vpc_id"`
 }
-
-type ParamAwsNodeScript struct {
-	InitialLaunchScript string `json:"initial_launch_script"`
-	LaunchScript        string `json:"launch_script"`
-}

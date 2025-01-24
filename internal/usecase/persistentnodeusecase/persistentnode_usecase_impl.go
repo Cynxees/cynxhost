@@ -147,6 +147,11 @@ func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Conte
 
 	// Change struct to map
 	marshalledVariables, err := helper.StructToMapStringArray(req.Variables)
+	if err != nil {
+		resp.Code = responsecode.CodeFailJSON
+		resp.Error = err.Error()
+		return ctx
+	}
 
 	// Check if server variable is valid
 	_, err = helper.FormatScriptVariables(serverTemplate.Script.Variables, req.Variables)
@@ -172,7 +177,7 @@ func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Conte
 		"CONFIG_PATH":                 serverTemplate.Script.ConfigPath,
 	}
 
-	userData, err := helper.ReplacePlaceholders(string(serverTemplate.Script.SetupScript), userDataVariables)
+	userData, err := helper.ReplacePlaceholders(string(param.StaticParam.ParamAwsLaunchScript), userDataVariables)
 	if err != nil {
 		resp.Code = responsecode.CodeInternalError
 		resp.Error = err.Error()
@@ -300,86 +305,6 @@ func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Conte
 	return ctx
 }
 
-func (usecase *PersistentNodeUseCaseImpl) ShutdownCallbackPersistentNode(ctx context.Context, req request.ShutdownCallbackPersistentNodeRequest, resp *response.APIResponse) context.Context {
-
-	_, persistentNodes, err := usecase.tblPersistentNode.GetPersistentNodes(ctx, "id", strconv.Itoa(req.PersistentNodeId))
-	if err != nil {
-		resp.Code = responsecode.CodeTblPersistentNodeError
-		resp.Error = err.Error()
-
-		return ctx
-	}
-
-	if len(persistentNodes) == 0 {
-		resp.Code = responsecode.CodeNotFound
-		resp.Error = "Persistent node not found"
-
-		return ctx
-	}
-
-	persistentNode := persistentNodes[0]
-
-	if persistentNode.Instance == nil {
-		resp.Code = responsecode.CodeNotFound
-		resp.Error = "No Instance Running instance found"
-
-		return ctx
-	}
-
-	// Check if the persistent node ip is the same
-	if persistentNode.Instance.PrivateIp != req.ClientIp && persistentNode.Instance.PublicIp != req.ClientIp {
-		resp.Code = responsecode.CodeForbidden
-		resp.Error = "You are not allowed to access this persistent node"
-
-		return ctx
-	}
-
-	// Shutdown the instance
-	terminatedInstance, err := usecase.shutdownInstance(ctx, persistentNode.Instance.AwsInstanceId)
-	if err != nil {
-		resp.Code = responsecode.CodeEC2Error
-		resp.Error = err.Error()
-
-		return ctx
-	}
-
-	if terminatedInstance.CurrentState.Name == awstypes.InstanceStateNameTerminated || terminatedInstance.CurrentState.Name == awstypes.InstanceStateNameShuttingDown {
-		resp.Code = responsecode.CodeNotAllowed
-		resp.Error = "Instance already terminated or is shutting down"
-		return ctx
-	}
-
-	// Remove instance from persistent node
-	ctx, err = usecase.tblPersistentNode.UpdatePersistentNode(ctx, persistentNode.Id, entity.TblPersistentNode{
-		InstanceId: nil,
-	})
-
-	if err != nil {
-		resp.Code = responsecode.CodeTblPersistentNodeError
-		resp.Error = err.Error()
-		return ctx
-	}
-
-	// Delete the instance
-	if persistentNode.InstanceId == nil {
-		resp.Code = responsecode.CodeNotFound
-		resp.Error = "No instance found"
-		return ctx
-	}
-
-	ctx, err = usecase.tblInstance.DeleteInstance(ctx, *persistentNode.InstanceId)
-	if err != nil {
-		resp.Code = responsecode.CodeTblInstanceError
-		resp.Error = err.Error()
-		return ctx
-	}
-
-	// Change the status of the persistent node ( TODO )
-
-	resp.Code = responsecode.CodeSuccess
-	return ctx
-}
-
 func (usecase *PersistentNodeUseCaseImpl) ForceShutdownPersistentNode(ctx context.Context, req request.ForceShutdownPersistentNodeRequest, resp *response.APIResponse) context.Context {
 
 	_, persistentNodes, err := usecase.tblPersistentNode.GetPersistentNodes(ctx, "id", strconv.Itoa(req.PersistentNodeId))
@@ -415,7 +340,7 @@ func (usecase *PersistentNodeUseCaseImpl) ForceShutdownPersistentNode(ctx contex
 	}
 
 	// Shutdown the instance
-	terminatedInstance, err := usecase.shutdownInstance(ctx, persistentNode.Instance.AwsInstanceId)
+	terminatedInstance, err := usecase.shutdownInstance(ctx, &persistentNode)
 	if err != nil {
 		resp.Code = responsecode.CodeEC2Error
 		resp.Error = err.Error()
@@ -460,10 +385,10 @@ func (usecase *PersistentNodeUseCaseImpl) ForceShutdownPersistentNode(ctx contex
 	return ctx
 }
 
-func (usecase *PersistentNodeUseCaseImpl) shutdownInstance(ctx context.Context, awsInstanceId string) (*awstypes.InstanceStateChange, error) {
+func (usecase *PersistentNodeUseCaseImpl) shutdownInstance(ctx context.Context, persistentNode *entity.TblPersistentNode) (*awstypes.InstanceStateChange, error) {
 
 	response, err := usecase.awsManager.EC2Client.TerminateInstances(ctx, &ec2.TerminateInstancesInput{
-		InstanceIds: []string{awsInstanceId},
+		InstanceIds: []string{persistentNode.Instance.AwsInstanceId},
 	})
 
 	if len(response.TerminatingInstances) == 0 {
@@ -471,6 +396,9 @@ func (usecase *PersistentNodeUseCaseImpl) shutdownInstance(ctx context.Context, 
 	}
 
 	terminatedInstance := response.TerminatingInstances[0]
+
+	// Update DNS
+	usecase.porkbunManager.UpdateDNS("A", *&persistentNode.ServerAlias, usecase.config.App.PublicIp)
 
 	return &terminatedInstance, err
 }

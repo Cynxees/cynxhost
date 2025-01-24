@@ -11,6 +11,11 @@ type CreatePersistentNodeRequest struct {
 	Variables        []ServerTemplateScriptVariable `json:"variables"`
 }
 
+type ValidateServerTemplateVariablesRequest struct {
+	ServerTemplateId int                            `json:"server_template_id" validate:"required"`
+	Variables        []ServerTemplateScriptVariable `json:"variables"`
+}
+
 type ServerTemplateScriptVariable struct {
 	Name  string `json:"name" validate:"required"`
 	Value string `json:"value" validate:"required"`

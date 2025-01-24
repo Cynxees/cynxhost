@@ -102,11 +102,39 @@ RESPONSE=$(curl -X POST {{.LAUNCH_SUCCESS_CALLBACK_URL}} \
 SCRIPT=$(echo "$RESPONSE" | jq -r '.data.Script')
 PERSISTENT_NODE_ID=$(echo "$RESPONSE" | jq '.data.PersistentNodeId | select(. != null) | tonumber')
 
+cd $MOUNT_DIR
+
 if [ "$SCRIPT" != "null" ] && [ -n "$SCRIPT" ]; then
   echo "Received base64 encoded script"
 
-  # Decode the base64 encoded script and execute it
-  su -c "echo \"$SCRIPT\" | base64 --decode | bash" cynxhost
+  echo "Pulling base image..."
+  aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin 242201306378.dkr.ecr.ap-southeast-1.amazonaws.com
+  docker pull 242201306378.dkr.ecr.ap-southeast-1.amazonaws.com/cynxhost/node:base
+
+  # Make docker container with dockerfile
+  echo "Creating Dockerfile..."
+  cat > Dockerfile << EOF
+FROM 242201306378.dkr.ecr.ap-southeast-1.amazonaws.com/cynxhost/node:cynxhost-base-image
+USER cynxhost
+WORKDIR $MOUNT_DIR
+COPY script.sh $MOUNT_DIR/script.sh
+USER root
+RUN chmod +x $MOUNT_DIR/script.sh
+USER cynxhost
+CMD ["sh", "-c", "$MOUNT_DIR/script.sh && tail -f /dev/null"]
+EOF
+
+  # Decode the base64 encoded script and save it to script.sh
+  echo "Decoding and saving the script..."
+  echo "$SCRIPT" | base64 --decode > $MOUNT_DIR/script.sh
+  
+  # Build Docker image
+  echo "Building Docker image..."
+  docker build -t cynxhost-container .
+
+  # Run Docker container
+  echo "Running Docker container..."
+  docker run -d --name cynxhost-container cynxhost-container
 
   # Send success response
   echo "Sending success response"

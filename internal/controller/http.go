@@ -2,6 +2,7 @@ package controller
 
 import (
 	"cynxhost/internal/app"
+	"cynxhost/internal/controller/instancetypecontroller"
 	"cynxhost/internal/controller/persistentnodecontroller"
 	"cynxhost/internal/controller/servertemplatecontroller"
 	"cynxhost/internal/controller/testcontroller"
@@ -50,6 +51,7 @@ func NewHttpServer(app *app.App) (*HttpServer, error) {
 	userController := usercontroller.New(app.Usecases.UserUseCase, app.Dependencies.Validator, app.Dependencies.Config)
 	serverTemplateController := servertemplatecontroller.New(app.Usecases.ServerTemplateUseCase, app.Dependencies.Validator)
 	persistentNodeController := persistentnodecontroller.New(app.Usecases.PersistentNodeUseCase, app.Dependencies.Validator)
+	instanceTypeController := instancetypecontroller.New(app.Usecases.InstanceTypeUseCase, app.Dependencies.Validator)
 
 	// User
 	handleRouterFunc("user/register", userController.RegisterUser, false)
@@ -63,6 +65,10 @@ func NewHttpServer(app *app.App) (*HttpServer, error) {
 	handleRouterFunc("server-template/paginate", serverTemplateController.PaginateServerTemplate, false)
 	handleRouterFunc("server-template/paginate-categories", serverTemplateController.PaginateServerTemplateCategories, false)
 	handleRouterFunc("server-template/detail", serverTemplateController.GetServerTemplate, false)
+	handleRouterFunc("server-template/validate-variables", serverTemplateController.ValidateServerTemplateVariables, false)
+
+	// Server Instances
+	handleRouterFunc("instance-type/paginate", instanceTypeController.PaginateInstanceType, false)
 
 	// Persistent Node
 	handleRouterFunc("persistent-node/show-owned", persistentNodeController.GetAllPersistentNodesFromUser, true)

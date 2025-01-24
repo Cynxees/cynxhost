@@ -2,6 +2,7 @@ package servertemplateusecase
 
 import (
 	"context"
+	"cynxhost/internal/helper"
 	"cynxhost/internal/model/request"
 	"cynxhost/internal/model/response"
 	"cynxhost/internal/model/response/responsecode"
@@ -147,4 +148,40 @@ func (usecase *ServerTemplateUseCaseImpl) GetServerTemplate(ctx context.Context,
 	resp.Data = responsedata.GetServerTemplateResponseData{
 		ServerTemplate: serverTemplateResponse,
 	}
+}
+
+func (uc *ServerTemplateUseCaseImpl) ValidateServerTemplateVariables(ctx context.Context, req request.ValidateServerTemplateVariablesRequest, resp *response.APIResponse) {
+
+	// Get Script
+	_, serverTemplate, err := uc.tblServerTemplate.GetServerTemplate(ctx, "id", strconv.Itoa(req.ServerTemplateId))
+	if err != nil {
+		resp.Code = responsecode.CodeTblServerTemplateError
+		resp.Error = err.Error()
+		return
+	}
+
+	if serverTemplate == nil {
+		resp.Code = responsecode.CodeNotFound
+		resp.Error = "Server template not found"
+		return
+	}
+
+	// Change struct to map
+	_, err = helper.StructToMapStringArray(req.Variables)
+	if err != nil {
+		resp.Code = responsecode.CodeFailJSON
+		resp.Error = err.Error()
+		return
+	}
+
+	// Check if server variable is valid
+	_, err = helper.FormatScriptVariables(serverTemplate.Script.Variables, req.Variables)
+	if err != nil {
+		resp.Code = responsecode.CodeFailJSON
+		resp.Error = err.Error()
+		return
+	}
+
+	resp.Code = responsecode.CodeSuccess
+	return
 }

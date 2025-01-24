@@ -1,0 +1,46 @@
+# Base image
+FROM ubuntu:22.04
+
+# Set up the base environment and install utilities
+USER root
+RUN apt-get update && apt-get install -y \
+    curl \
+    jq \
+    wget \
+    gpg \
+    software-properties-common \
+    tmux \
+    openssh-server
+
+# Set up SSH server
+RUN mkdir /var/run/sshd && \
+    echo 'Port 22' >> /etc/ssh/sshd_config && \
+    echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config && \
+    echo 'PasswordAuthentication yes' >> /etc/ssh/sshd_config
+
+# Add SSH user with password
+RUN useradd -m -s /bin/bash cynxhost && echo 'cynxhost:cynxpass' | chpasswd && \
+    mkdir -p /home/cynxhost/.ssh && \
+    chown -R cynxhost:cynxhost /home/cynxhost/.ssh
+
+# Organize Java installation into a single RUN step to leverage Docker layer caching
+RUN wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor | tee /etc/apt/trusted.gpg.d/adoptium.gpg > /dev/null && \
+    echo "deb https://packages.adoptium.net/artifactory/deb $(awk -F= '/^VERSION_CODENAME/ {print $2}' /etc/os-release) main" | tee /etc/apt/sources.list.d/adoptium.list && \
+    apt-get update && apt-get install -y \
+    temurin-8-jdk \
+    temurin-11-jdk \
+    temurin-17-jdk \
+    temurin-21-jdk
+
+# Switch to the non-root user for your application
+USER cynxhost
+WORKDIR /home/cynxhost/node
+
+# Copy application scripts
+COPY scripts /home/cynxhost/scripts
+
+# Expose the SSH port
+EXPOSE 22
+
+# Start SSH server and keep the container running
+CMD ["/usr/sbin/sshd", "-D"]
