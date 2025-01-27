@@ -23,14 +23,14 @@ func AuthMiddleware(JWTManager *dependencies.JWTManager, next http.HandlerFunc, 
 					Code:  responsecode.CodeAuthenticationError,
 					Error: "AuthToken cookie missing",
 				}
-				helper.WriteJSONResponse(w, http.StatusUnauthorized, apiResponse)
+				helper.WriteJSONResponse(w, http.StatusOK, apiResponse)
 				return
 			}
 			apiResponse := response.APIResponse{
 				Code:  responsecode.CodeAuthenticationError,
 				Error: "Error retrieving cookie",
 			}
-			helper.WriteJSONResponse(w, http.StatusUnauthorized, apiResponse)
+			helper.WriteJSONResponse(w, http.StatusOK, apiResponse)
 			return
 		}
 
@@ -42,7 +42,7 @@ func AuthMiddleware(JWTManager *dependencies.JWTManager, next http.HandlerFunc, 
 				Code:  responsecode.CodeAuthenticationError,
 				Error: "Invalid or expired access token",
 			}
-			helper.WriteJSONResponse(w, http.StatusUnauthorized, apiResponse)
+			helper.WriteJSONResponse(w, http.StatusOK, apiResponse)
 			return
 		}
 
@@ -56,7 +56,7 @@ func AuthMiddleware(JWTManager *dependencies.JWTManager, next http.HandlerFunc, 
 				Code:  responsecode.CodeAuthenticationError,
 				Error: "Invalid user ID format: " + err.Error(),
 			}
-			helper.WriteJSONResponse(w, http.StatusUnauthorized, apiResponse)
+			helper.WriteJSONResponse(w, http.StatusOK, apiResponse)
 			return
 		}
 

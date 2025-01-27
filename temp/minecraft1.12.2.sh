@@ -55,9 +55,6 @@ fi
 
 SESSION_NAME="cynxhost-node"
 
-mkdir $AGENT_DIR
-touch $AGENT_OUTPUT_FILE
-
 # Start the Minecraft server
 echo "Starting Minecraft server..."
-tmux new-session -d -s $SESSION_NAME "java -Xmx1024M -Xms1024M -jar '$MC_SERVER_JAR' nogui
+tmux new-session -d -s "$SESSION_NAME" "java -Xmx1024M -Xms1024M -jar '$MC_SERVER_JAR' nogui"

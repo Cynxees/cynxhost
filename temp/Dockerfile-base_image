@@ -10,13 +10,17 @@ RUN apt-get update && apt-get install -y \
     gpg \
     software-properties-common \
     tmux \
-    openssh-server
+    openssh-server \
+    openssh-sftp-server
 
 # Set up SSH server
 RUN mkdir /var/run/sshd && \
     echo 'Port 22' >> /etc/ssh/sshd_config && \
     echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config && \
     echo 'PasswordAuthentication yes' >> /etc/ssh/sshd_config
+
+# Generate SSH host keys
+RUN ssh-keygen -A
 
 # Add SSH user with password
 RUN useradd -m -s /bin/bash cynxhost && echo 'cynxhost:cynxpass' | chpasswd && \
