@@ -76,9 +76,9 @@ type Config struct {
 		} `mapstructure:"jwt"`
 
 		CORS struct {
-			Enabled bool   `mapstructure:"enabled"`
-			Origin  string `mapstructure:"origin"`
-			Domain  string `mapstructure:"domain"`
+			Enabled bool     `mapstructure:"enabled"`
+			Origins []string `mapstructure:"origins"`
+			Domain  string   `mapstructure:"domain"`
 		} `mapstructure:"cors"`
 	} `mapstructure:"security"`
 }

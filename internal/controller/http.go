@@ -28,7 +28,7 @@ func NewHttpServer(app *app.App) (*HttpServer, error) {
 	config := app.Dependencies.Config
 
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{config.Security.CORS.Origin},               // replace with your frontend URL
+		AllowedOrigins:   config.Security.CORS.Origins,                        // replace with your frontend URL
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}, // allowed methods
 		AllowedHeaders:   []string{"Content-Type", "Authorization"},           // allowed headers
 		AllowCredentials: true,

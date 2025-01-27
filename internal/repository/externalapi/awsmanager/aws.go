@@ -76,3 +76,7 @@ func (client *AWSManager) GetSignedURL(key string) (*string, error) {
 
 	return &req.URL, nil
 }
+
+func (client *AWSManager) GetUnsignedURL(key string) (*string, error) {
+	return aws.String("https://" + client.AppConfig.S3.Bucket + ".s3." + client.AppConfig.Region + ".amazonaws.com/" + key), nil
+}

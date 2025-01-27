@@ -36,7 +36,7 @@ func (usecase *ServerTemplateUseCaseImpl) PaginateServerTemplate(ctx context.Con
 	var responseServerTemplates []responsedata.ServerTemplate
 
 	for i, template := range serverTemplates {
-		url, err := usecase.awsManager.GetSignedURL(*template.ImagePath)
+		url, err := usecase.awsManager.GetUnsignedURL(*template.ImagePath)
 		if err != nil {
 			resp.Code = responsecode.CodeAWSError
 			resp.Error = err.Error()
@@ -66,7 +66,7 @@ func (usecase *ServerTemplateUseCaseImpl) PaginateServerTemplateCategories(ctx c
 
 		var url *string
 		if template.ImagePath != nil {
-			result, err := usecase.awsManager.GetSignedURL(*template.ImagePath)
+			result, err := usecase.awsManager.GetUnsignedURL(*template.ImagePath)
 			if err != nil {
 				resp.Code = responsecode.CodeAWSError
 				resp.Error = err.Error()
@@ -104,7 +104,7 @@ func (usecase *ServerTemplateUseCaseImpl) GetServerTemplate(ctx context.Context,
 	var signedUrl *string
 
 	if template.ImagePath != nil {
-		url, err := usecase.awsManager.GetSignedURL(*template.ImagePath)
+		url, err := usecase.awsManager.GetUnsignedURL(*template.ImagePath)
 		if err != nil {
 			resp.Code = responsecode.CodeS3Error
 			resp.Error = err.Error()
