@@ -339,6 +339,10 @@ func (usecase *PersistentNodeUseCaseImpl) ForceShutdownPersistentNode(ctx contex
 		return ctx
 	}
 
+	ctx, err = usecase.tblPersistentNode.UpdatePersistentNode(ctx, persistentNode.Id, entity.TblPersistentNode{
+		Status: types.PersistentNodeStatusShuttingDown,
+	})
+
 	// Shutdown the instance
 	terminatedInstance, err := usecase.shutdownInstance(ctx, &persistentNode)
 	if err != nil {
@@ -357,6 +361,7 @@ func (usecase *PersistentNodeUseCaseImpl) ForceShutdownPersistentNode(ctx contex
 	// Remove instance from persistent node
 	ctx, err = usecase.tblPersistentNode.UpdatePersistentNode(ctx, persistentNode.Id, entity.TblPersistentNode{
 		InstanceId: nil,
+		Status:     types.PersistentNodeStatusShutdown,
 	})
 
 	if err != nil {

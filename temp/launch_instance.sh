@@ -121,7 +121,7 @@ WORKDIR $MOUNT_DIR
 COPY script.sh $MOUNT_DIR/script.sh
 USER root
 RUN chmod +x $MOUNT_DIR/script.sh
-CMD sh -c "$MOUNT_DIR/script.sh && tail -f /dev/null"
+CMD service ssh start && sh -c "$MOUNT_DIR/script.sh && tail -f /dev/null"
 EOF
 
   # Decode the base64 encoded script and save it to script.sh
@@ -161,12 +161,30 @@ NGINX_CONFIG="/etc/nginx/sites-available/${DOMAIN}"
 
 # Create an NGINX configuration
 echo "server {
-    # HTTP traffic (port 80)
-    listen 80;
+    listen 443 ssl;
     server_name $DOMAIN;
 
+    # SSL certificates
+    ssl_certificate /etc/ssl/certs/domain.cert.pem;
+    ssl_certificate_key /etc/ssl/private/private.key.pem;
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-GCM-SHA384';
+    ssl_prefer_server_ciphers on;
+
+    # Handle HTTP traffic (port 3001)
     location / {
-        proxy_pass http://127.0.0.1:3001;  # Replace with your HTTP service's port
+        proxy_pass http://127.0.0.1:3001;  # HTTP service on port 3001
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host \$host;
+        proxy_cache_bypass \$http_upgrade;
+    }
+
+    # Handle WebSocket traffic (port 8000)
+    location /ws {  # Assuming WebSocket is accessed via /ws
+        proxy_pass http://127.0.0.1:8000;  # WebSocket service on port 8000
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection 'upgrade';
