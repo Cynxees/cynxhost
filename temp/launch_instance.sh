@@ -77,6 +77,7 @@ echo "Fetching cynxhostagent from s3..."
 aws s3 cp s3://cynxhost/cynxhostagent/cynxhostagent . --region ap-southeast-1
 aws s3 cp s3://cynxhost/{{.CONFIG_PATH}} ./config.json --region ap-southeast-1
 
+sudo usermod -aG docker cynxhost
 sudo chmod +x cynxhostagent
 
 # Restarting cynxhost agent service
@@ -165,8 +166,8 @@ echo "server {
     server_name $DOMAIN;
 
     # SSL certificates
-    ssl_certificate /etc/ssl/certs/domain.cert.pem;
-    ssl_certificate_key /etc/ssl/private/private.key.pem;
+    ssl_certificate /etc/ssl/certs/cynx.buzz.domain.cert.pem;
+    ssl_certificate_key /etc/ssl/private/cynx.buzz.private.key.pem;
 
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-GCM-SHA384';
