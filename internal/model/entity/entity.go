@@ -19,16 +19,17 @@ type TblUser struct {
 }
 
 type TblInstanceType struct {
-	Id           int       `gorm:"primaryKey" json:"id" visibility:"1"`
-	CreatedDate  time.Time `gorm:"autoCreateTime" json:"created_date" visibility:"1"`
-	UpdatedDate  time.Time `gorm:"autoUpdateTime" json:"updated_date" visibility:"1"`
-	Name         string    `gorm:"size:255;not null" json:"name" visibility:"1"`
-	VcpuCount    int       `gorm:"not null" json:"vcpu_count" visibility:"1"`
-	MemorySizeMb int       `gorm:"not null" json:"memory_size_mb" visibility:"1"`
-	ImagePath    *string   `gorm:"size:255" json:"image_path" visibility:"10"`
-	SpotPrice    float64   `gorm:"type:decimal(10,2);not null" json:"spot_price" visibility:"10"`
-	SellPrice    float64   `gorm:"type:decimal(10,2);not null" json:"sell_price" visibility:"1"`
-	Status       string    `gorm:"type:enum('ACTIVE', 'INACTIVE', 'HIDDEN');not null" json:"status" visibility:"1"`
+	Id               int       `gorm:"primaryKey" json:"id" visibility:"1"`
+	CreatedDate      time.Time `gorm:"autoCreateTime" json:"created_date" visibility:"1"`
+	UpdatedDate      time.Time `gorm:"autoUpdateTime" json:"updated_date" visibility:"1"`
+	Name             string    `gorm:"size:255;not null" json:"name" visibility:"1"`
+	VcpuCount        int       `gorm:"not null" json:"vcpu_count" visibility:"1"`
+	MemorySizeGb     int       `gorm:"not null" visibility:"1"`
+	NetworkSpeedMbps int       `gorm:"not null" visibility:"1"`
+	ImagePath        *string   `gorm:"size:255" json:"image_path" visibility:"10"`
+	SpotPrice        float64   `gorm:"type:decimal(10,2);not null" json:"spot_price" visibility:"10"`
+	SellPrice        float64   `gorm:"type:decimal(10,2);not null" json:"sell_price" visibility:"1"`
+	Status           string    `gorm:"type:enum('ACTIVE', 'INACTIVE', 'HIDDEN');not null" json:"status" visibility:"1"`
 }
 
 type TblInstance struct {
