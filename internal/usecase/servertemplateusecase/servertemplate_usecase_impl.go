@@ -33,21 +33,9 @@ func (usecase *ServerTemplateUseCaseImpl) PaginateServerTemplate(ctx context.Con
 		return
 	}
 
-	var responseServerTemplates []responsedata.ServerTemplate
-
-	for i, template := range serverTemplates {
-		url, err := usecase.awsManager.GetUnsignedURL(*template.ImagePath)
-		if err != nil {
-			resp.Code = responsecode.CodeAWSError
-			resp.Error = err.Error()
-			return
-		}
-		serverTemplates[i].ImagePath = url
-	}
-
 	resp.Code = responsecode.CodeSuccess
 	resp.Data = responsedata.PaginateServerTemplateResponseData{
-		ServerTemplates: responseServerTemplates,
+		ServerTemplates: serverTemplates,
 	}
 }
 
@@ -101,18 +89,6 @@ func (usecase *ServerTemplateUseCaseImpl) GetServerTemplate(ctx context.Context,
 		return
 	}
 
-	var signedUrl *string
-
-	if template.ImagePath != nil {
-		url, err := usecase.awsManager.GetUnsignedURL(*template.ImagePath)
-		if err != nil {
-			resp.Code = responsecode.CodeS3Error
-			resp.Error = err.Error()
-			return
-		}
-		signedUrl = url
-	}
-
 	var variablesResponse []responsedata.ScriptVariable
 
 	if template.Script.Variables != nil {
@@ -140,7 +116,7 @@ func (usecase *ServerTemplateUseCaseImpl) GetServerTemplate(ctx context.Context,
 		MinimumRam:  template.MinimumRam,
 		MinimumCpu:  template.MinimumCpu,
 		MinimumDisk: template.MinimumDisk,
-		ImageUrl:    signedUrl,
+		ImageUrl:    template.ImageUrl,
 		Variables:   variablesResponse,
 	}
 

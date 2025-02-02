@@ -7,7 +7,7 @@ import (
 )
 
 type PaginateServerTemplateResponseData struct {
-	ServerTemplates []ServerTemplate `json:"server_templates"`
+	ServerTemplates []entity.TblServerTemplate `json:"server_templates"`
 }
 
 type ServerTemplate struct {
@@ -17,7 +17,7 @@ type ServerTemplate struct {
 	MinimumRam  int              `json:"minimum_ram"`
 	MinimumCpu  int              `json:"minimum_cpu"`
 	MinimumDisk int              `json:"minimum_disk"`
-	ImageUrl    *string          `json:"image_url"`
+	ImageUrl    string           `json:"image_url"`
 	Variables   []ScriptVariable `json:"variables"`
 }
 

@@ -17,7 +17,7 @@ type TblServerTemplate struct {
 	MinimumRam  int       `gorm:"not null" json:"minimum_ram" visibility:"1"`
 	MinimumCpu  int       `gorm:"not null" json:"minimum_cpu" visibility:"1"`
 	MinimumDisk int       `gorm:"not null" json:"minimum_disk" visibility:"1"`
-	ImagePath   *string   `gorm:"size:255" json:"image_path" visibility:"10"`
+	ImageUrl    string    `gorm:"size:255" json:"image_url" visibility:"1"`
 	ScriptId    int       `gorm:"not null" json:"script_id" visibility:"1"`
 	Script      TblScript `gorm:"foreignKey:ScriptId" json:"script" visibility:"1"`
 }

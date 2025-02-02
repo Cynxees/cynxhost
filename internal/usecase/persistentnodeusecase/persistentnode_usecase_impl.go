@@ -213,7 +213,7 @@ func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Conte
 		},
 		ImageId:      aws.String(param.StaticParam.ParamAwsNodeId.AmiId),
 		KeyName:      aws.String(param.StaticParam.ParamAwsNodeId.KeyPairName),
-		InstanceType: awstypes.InstanceType(instanceType.Name),
+		InstanceType: awstypes.InstanceType(instanceType.AwsKey),
 		InstanceMarketOptions: &awstypes.InstanceMarketOptionsRequest{
 			MarketType: awstypes.MarketTypeSpot,
 			SpotOptions: &awstypes.SpotMarketOptions{

@@ -23,6 +23,7 @@ type TblInstanceType struct {
 	CreatedDate      time.Time `gorm:"autoCreateTime" json:"created_date" visibility:"1"`
 	UpdatedDate      time.Time `gorm:"autoUpdateTime" json:"updated_date" visibility:"1"`
 	Name             string    `gorm:"size:255;not null" json:"name" visibility:"1"`
+	AwsKey           string    `gorm:"size:255;not null" json:"aws_key" visibility:"10"`
 	VcpuCount        int       `gorm:"not null" json:"vcpu_count" visibility:"1"`
 	MemorySizeGb     int       `gorm:"not null" visibility:"1"`
 	NetworkSpeedMbps int       `gorm:"not null" visibility:"1"`
