@@ -77,6 +77,19 @@ echo "Fetching cynxhostagent from s3..."
 aws s3 cp s3://cynxhost/cynxhostagent/cynxhostagent . --region ap-southeast-1
 aws s3 cp s3://cynxhost/{{.CONFIG_PATH}} ./config.json --region ap-southeast-1
 
+echo "Setting up docker"
+sudo systemctl stop docker
+sudo mv /var/lib/docker $MOUNT_DIR/docker
+
+echo "
+{
+\"data-root\": \"$MOUNT_DIR/docker\"
+}
+" > /etc/docker/daemon.json
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+
+echo "Setting up cynxhost agent"
 sudo usermod -aG docker cynxhost
 sudo chmod +x cynxhostagent
 
@@ -174,7 +187,7 @@ echo "server {
     ssl_prefer_server_ciphers on;
 
     # Handle HTTP traffic (port 3001)
-    location / {
+    location /cynxapi {
         proxy_pass http://127.0.0.1:3001;  # HTTP service on port 3001
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
@@ -184,7 +197,7 @@ echo "server {
     }
 
     # Handle WebSocket traffic (port 8000)
-    location /ws {  # Assuming WebSocket is accessed via /ws
+    location /cynxws {  # Assuming WebSocket is accessed via /ws
         proxy_pass http://127.0.0.1:8000;  # WebSocket service on port 8000
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;

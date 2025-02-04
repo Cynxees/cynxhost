@@ -205,8 +205,8 @@ func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Conte
 			{
 				DeviceName: aws.String("/dev/sdb"),
 				Ebs: &awstypes.EbsBlockDevice{
-					DeleteOnTermination: aws.Bool(true), // TODO: Change to false
-					VolumeSize:          aws.Int32(8),
+					DeleteOnTermination: aws.Bool(true),
+					VolumeSize:          aws.Int32(int32(req.StorageSizeGb)),
 					VolumeType:          awstypes.VolumeTypeGp2,
 				},
 			},
@@ -257,7 +257,7 @@ func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Conte
 
 	storage := entity.TblStorage{
 		Name:   req.Name,
-		SizeMb: req.StorageSizeMb,
+		SizeMb: req.StorageSizeGb,
 		Status: types.StorageStatusNew,
 	}
 

@@ -4,7 +4,7 @@ import contextmodel "cynxhost/internal/model/context"
 
 type CreatePersistentNodeRequest struct {
 	ServerTemplateId int                            `json:"server_template_id" validate:"required"`
-	StorageSizeMb    int                            `json:"storage_size_mb" validate:"required"`
+	StorageSizeGb    int                            `json:"storage_size_gb" validate:"required"`
 	InstanceTypeId   int                            `json:"instance_type_id" validate:"required"`
 	ServerAlias      string                         `json:"server_alias" validate:"required"`
 	Name             string                         `json:"name" validate:"required"`
