@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ecr"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
@@ -18,6 +19,7 @@ type AWSManager struct {
 
 	EC2Client *ec2.Client
 	S3Client  *s3.Client
+	ECRClient *ecr.Client
 }
 
 func NewAWSManager(appConfig *dependencies.ConfigAws) *AWSManager {
@@ -29,6 +31,7 @@ func NewAWSManager(appConfig *dependencies.ConfigAws) *AWSManager {
 		Config:    config,
 		EC2Client: newEC2Client(*config),
 		S3Client:  newS3Client(*config),
+		ECRClient: newECRClient(*config),
 	}
 }
 
@@ -38,6 +41,10 @@ func newEC2Client(config aws.Config) *ec2.Client {
 
 func newS3Client(config aws.Config) *s3.Client {
 	return s3.NewFromConfig(config)
+}
+
+func newECRClient(config aws.Config) *ecr.Client {
+	return ecr.NewFromConfig(config)
 }
 
 func newAWSConfig(accessKeyId string, secret string) *aws.Config {
@@ -81,6 +88,11 @@ func (client *AWSManager) GetUnsignedURL(key string) (*string, error) {
 	return aws.String("https://" + client.AppConfig.S3.Bucket + ".s3." + client.AppConfig.Region + ".amazonaws.com/" + key), nil
 }
 
-func (client *AWSManager) CreateEcrRepository(repositoryName string) error {
-	return nil
+func (manager *AWSManager) CreateEcrRepository(repositoryName string) error {
+
+	_, err := manager.ECRClient.CreateRepository(context.Background(), &ecr.CreateRepositoryInput{
+		RepositoryName: aws.String(repositoryName),
+	})
+
+	return err
 }

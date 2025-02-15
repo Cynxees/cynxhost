@@ -19,6 +19,7 @@ const (
 	CodeInternalError ResponseCode = "IE"
 	CodeAWSError      ResponseCode = "AWSERR"
 	CodeEC2Error      ResponseCode = "EC2ERR"
+	CodeECRError      ResponseCode = "ECRERR"
 	CodeS3Error       ResponseCode = "S3ERR"
 	CodeRCONError     ResponseCode = "RCONERR"
 	CodePorkbunError  ResponseCode = "PBERR"

@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -297,6 +298,14 @@ func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Conte
 	ctx, _, err = usecase.tblPersistentNode.CreatePersistentNode(ctx, persistentNode)
 	if err != nil {
 		resp.Code = responsecode.CodeTblPersistentNodeError
+		resp.Error = err.Error()
+		return ctx
+	}
+
+	// Create ecr repository
+	err = usecase.awsManager.CreateEcrRepository(fmt.Sprintf("cynxhost-%d", persistentNode.Id))
+	if err != nil && !strings.Contains(err.Error(), "RepositoryAlreadyExistsException") {
+		resp.Code = responsecode.CodeECRError
 		resp.Error = err.Error()
 		return ctx
 	}
