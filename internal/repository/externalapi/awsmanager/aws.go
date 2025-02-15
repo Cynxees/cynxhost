@@ -80,3 +80,7 @@ func (client *AWSManager) GetSignedURL(key string) (*string, error) {
 func (client *AWSManager) GetUnsignedURL(key string) (*string, error) {
 	return aws.String("https://" + client.AppConfig.S3.Bucket + ".s3." + client.AppConfig.Region + ".amazonaws.com/" + key), nil
 }
+
+func (client *AWSManager) CreateEcrRepository(repositoryName string) error {
+	return nil
+}
