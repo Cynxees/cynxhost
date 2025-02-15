@@ -303,7 +303,7 @@ func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Conte
 	}
 
 	// Create ecr repository
-	err = usecase.awsManager.CreateEcrRepository(fmt.Sprintf("cynxhost-%d", persistentNode.Id))
+	err = usecase.awsManager.CreateEcrRepository(fmt.Sprintf("persistent-node/%d", persistentNode.Id))
 	if err != nil && !strings.Contains(err.Error(), "RepositoryAlreadyExistsException") {
 		resp.Code = responsecode.CodeECRError
 		resp.Error = err.Error()
