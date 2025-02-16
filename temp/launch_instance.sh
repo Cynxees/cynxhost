@@ -155,7 +155,6 @@ EOF
   -p 25565:25565 \
   -p 2222:22 \
   --name cynxhost-container \
-  -v $MOUNT_DIR/container:/home/cynxhost/node \
   cynxhost-container
 
   # Send success response
