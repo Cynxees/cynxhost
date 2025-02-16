@@ -70,6 +70,8 @@ echo "Writing to .env file..."
   echo "CENTRAL_PRIVATE_IP=\"{{.CENTRAL_PRIVATE_IP}}\""
   echo "CENTRAL_PUBLIC_IP=\"{{.CENTRAL_PUBLIC_IP}}\""
   echo "CENTRAL_PORT=\"{{.CENTRAL_PORT}}\""
+  echo "AWS_ACCESS_KEY_ID=\"{{.AWS_ACCESS_KEY_ID}}\""
+  echo "AWS_ACCESS_KEY_SECRET=\"{{.AWS_ACCESS_KEY_SECRET}}\""
 } > .env
 
 # Fetching cynxhostagent from s3

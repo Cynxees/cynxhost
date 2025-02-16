@@ -174,6 +174,8 @@ func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Conte
 		"CENTRAL_PRIVATE_IP":          usecase.config.App.PrivateIp,
 		"CENTRAL_PUBLIC_IP":           usecase.config.App.PublicIp,
 		"CENTRAL_PORT":                strconv.Itoa(usecase.config.App.Port),
+		"AWS_ACCESS_KEY_ID":           usecase.config.Aws.AccessKeyId,
+		"AWS_ACCESS_KEY_SECRET":       usecase.config.Aws.AccessKeySecret,
 		"DOMAIN":                      fmt.Sprintf("%s.%s", req.ServerAlias, usecase.config.Porkbun.Domain),
 		"CONFIG_PATH":                 serverTemplate.Script.ConfigPath,
 	}
