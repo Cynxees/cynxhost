@@ -35,7 +35,11 @@ RUN wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg
     temurin-11-jdk \
     temurin-17-jdk \
     temurin-21-jdk
-
+    
+# Copy mrinstaller
+COPY /usr/local/bin/mrpack-install /home/cynxhost/workshop/mrpack-install/mrpack-install
+RUN chmod +x /usr/local/bin/mrpack-install
+  
 # Switch to the non-root user for your application
 USER cynxhost
 WORKDIR /home/cynxhost/node
@@ -48,3 +52,22 @@ EXPOSE 22
 
 # Start SSH server and keep the container running
 CMD ["/usr/sbin/sshd", "-D"]
+
+
+
+# =================================================================================================
+# BYPASS ONLY
+FROM 242201306378.dkr.ecr.ap-southeast-1.amazonaws.com/cynxhost-base-image:latest
+
+USER root
+
+# MUST HAVE
+RUN ssh-keygen -A
+
+COPY mrpack-install /usr/local/bin/mrpack-install
+RUN chmod +x /usr/local/bin/mrpack-install
+
+USER cynxhost
+EXPOSE 22
+
+CMD [ "sh", "-c", "ssh-keygen -A && exec /usr/sbin/sshd -D" ]

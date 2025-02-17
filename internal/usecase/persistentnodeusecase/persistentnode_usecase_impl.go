@@ -201,7 +201,7 @@ func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Conte
 				DeviceName: aws.String("/dev/sda1"), // The device name, typically /dev/sda1 for the root volume
 				Ebs: &awstypes.EbsBlockDevice{
 					DeleteOnTermination: aws.Bool(true),         // Ensures that the volume is deleted when the instance is terminated
-					VolumeSize:          aws.Int32(8),           // Set the volume size in GiB (e.g., 20 GiB)
+					VolumeSize:          aws.Int32(16),           // Set the volume size in GiB (e.g., 20 GiB)
 					VolumeType:          awstypes.VolumeTypeGp2, // You can also specify the volume type, such as gp2 (General Purpose SSD)
 				},
 			},
