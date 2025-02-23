@@ -1,18 +1,23 @@
 package porkbunmanager
 
 import (
-	"cynxhost/internal/dependencies"
 	"cynxhost/internal/helper"
 	porkbunmodel "cynxhost/internal/model/externalapi/porkbun"
 	"encoding/json"
 	"fmt"
 )
 
-type PorkbunManager struct {
-	Config *dependencies.ConfigPorkbun
+type ConfigPorkbun struct {
+	ApiKey    string `mapstructure:"apiKey"`
+	SecretKey string `mapstructure:"secretKey"`
+	Domain    string `mapstructure:"domain"`
 }
 
-func New(config *dependencies.ConfigPorkbun) *PorkbunManager {
+type PorkbunManager struct {
+	Config *ConfigPorkbun
+}
+
+func New(config *ConfigPorkbun) *PorkbunManager {
 	return &PorkbunManager{
 		Config: config,
 	}
@@ -34,7 +39,7 @@ func (p *PorkbunManager) CreateDNS(subdomain string, ip string) (porkbunmodel.Cr
 	}
 
 	// Send the POST request
-	resp, err := helper.SendPostRequest(url, request, nil)
+	resp, err := helper.SendHttpRequest("POST", url, request, nil)
 	if err != nil {
 		return porkbunmodel.CreateDNSResponse{}, fmt.Errorf("failed to create DNS record: %v", err)
 	}
@@ -65,7 +70,7 @@ func (p *PorkbunManager) UpdateDNS(recordType string, subdomain string, newConte
 	}
 
 	// Send the POST request
-	resp, err := helper.SendPostRequest(url, request, nil)
+	resp, err := helper.SendHttpRequest("POST", url, request, nil)
 	if err != nil {
 		return fmt.Errorf("failed to update DNS record: %v", err)
 	}
@@ -98,7 +103,7 @@ func (p *PorkbunManager) RetrieveDNSByTypeSubdomain(recordType string, subdomain
 	}
 
 	// Make a GET request to check if the DNS record exists
-	resp, err := helper.SendPostRequest(url, request, nil)
+	resp, err := helper.SendHttpRequest("POST", url, request, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to check DNS record: %v", err)
 	}

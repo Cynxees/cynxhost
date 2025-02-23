@@ -77,20 +77,20 @@ func (usecase *PersistentNodeUseCaseImpl) LaunchCallbackPersistentNode(ctx conte
 	dnsRecordId := persistentNode.DnsRecordId
 
 	if dnsRecordId == nil {
-		porkbunResp, err := usecase.porkbunManager.CreateDNS(persistentNode.ServerAlias, req.PublicIp)
+		cloudflareResp, err := usecase.cloudflareManager.CreateDNSRecord(persistentNode.ServerAlias, req.PublicIp)
 		if err != nil {
-			resp.Code = responsecode.CodePorkbunError
+			resp.Code = responsecode.CodeCloudflareError
 			resp.Error = "Error creating DNS: " + err.Error()
 			return ctx
 		}
 
-		newId := strconv.Itoa(porkbunResp.Id)
+		newId := cloudflareResp.Result.ID
 		dnsRecordId = &newId
 
 	} else {
-		err = usecase.porkbunManager.UpdateDNS(*dnsRecordId, persistentNode.ServerAlias, req.PublicIp)
+		err = usecase.cloudflareManager.UpdateDNS(*dnsRecordId, "AAAA", persistentNode.ServerAlias, req.PublicIp)
 		if err != nil {
-			resp.Code = responsecode.CodePorkbunError
+			resp.Code = responsecode.CodeCloudflareError
 			resp.Error = "Error updating DNS: " + err.Error()
 			return ctx
 		}

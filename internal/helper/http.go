@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-func SendPostRequest(url string, data interface{}, headers map[string]string) (string, error) {
+func SendHttpRequest(method string, url string, data interface{}, headers map[string]string) (string, error) {
 
 	fmt.Println("SendPostRequest: ", url)
 	// Marshal the data into JSON
@@ -18,7 +18,7 @@ func SendPostRequest(url string, data interface{}, headers map[string]string) (s
 	}
 
 	// Create a POST request
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestData))
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(requestData))
 	if err != nil {
 		return "", err
 	}

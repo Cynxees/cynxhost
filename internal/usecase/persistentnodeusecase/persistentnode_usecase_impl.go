@@ -13,7 +13,7 @@ import (
 	"cynxhost/internal/model/response/responsedata"
 	"cynxhost/internal/repository/database"
 	"cynxhost/internal/repository/externalapi/awsmanager"
-	"cynxhost/internal/repository/externalapi/porkbunmanager"
+	"cynxhost/internal/repository/externalapi/cloudflaremanager"
 	"cynxhost/internal/usecase"
 	"encoding/base64"
 	"encoding/json"
@@ -37,11 +37,11 @@ type PersistentNodeUseCaseImpl struct {
 	log    *logrus.Logger
 	config *dependencies.Config
 
-	awsManager     *awsmanager.AWSManager
-	porkbunManager *porkbunmanager.PorkbunManager
+	awsManager        *awsmanager.AWSManager
+	cloudflareManager *cloudflaremanager.CloudflareManager
 }
 
-func New(tblPersistentNode database.TblPersistentNode, tblInstance database.TblInstance, tblInstanceType database.TblInstanceType, tblStorage database.TblStorage, tblServerTemplate database.TblServerTemplate, awsManager *awsmanager.AWSManager, logger *logrus.Logger, config *dependencies.Config, porkbunManager *porkbunmanager.PorkbunManager) usecase.PersistentNodeUseCase {
+func New(tblPersistentNode database.TblPersistentNode, tblInstance database.TblInstance, tblInstanceType database.TblInstanceType, tblStorage database.TblStorage, tblServerTemplate database.TblServerTemplate, awsManager *awsmanager.AWSManager, logger *logrus.Logger, config *dependencies.Config, cloudflareManager *cloudflaremanager.CloudflareManager) usecase.PersistentNodeUseCase {
 
 	return &PersistentNodeUseCaseImpl{
 		tblPersistentNode: tblPersistentNode,
@@ -53,8 +53,8 @@ func New(tblPersistentNode database.TblPersistentNode, tblInstance database.TblI
 		log:    logger,
 		config: config,
 
-		awsManager:     awsManager,
-		porkbunManager: porkbunManager,
+		awsManager:        awsManager,
+		cloudflareManager: cloudflareManager,
 	}
 }
 
@@ -176,7 +176,7 @@ func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Conte
 		"CENTRAL_PORT":                strconv.Itoa(usecase.config.App.Port),
 		"AWS_ACCESS_KEY_ID":           usecase.config.Aws.AccessKeyId,
 		"AWS_ACCESS_KEY_SECRET":       usecase.config.Aws.AccessKeySecret,
-		"DOMAIN":                      fmt.Sprintf("%s.%s", req.ServerAlias, usecase.config.Porkbun.Domain),
+		"DOMAIN":                      fmt.Sprintf("%s.%s", req.ServerAlias, usecase.config.Cloudflare.Domain),
 		"CONFIG_PATH":                 serverTemplate.Script.ConfigPath,
 	}
 
@@ -201,7 +201,7 @@ func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Conte
 				DeviceName: aws.String("/dev/sda1"), // The device name, typically /dev/sda1 for the root volume
 				Ebs: &awstypes.EbsBlockDevice{
 					DeleteOnTermination: aws.Bool(true),         // Ensures that the volume is deleted when the instance is terminated
-					VolumeSize:          aws.Int32(16),           // Set the volume size in GiB (e.g., 20 GiB)
+					VolumeSize:          aws.Int32(16),          // Set the volume size in GiB (e.g., 20 GiB)
 					VolumeType:          awstypes.VolumeTypeGp2, // You can also specify the volume type, such as gp2 (General Purpose SSD)
 				},
 			},
@@ -407,6 +407,10 @@ func (usecase *PersistentNodeUseCaseImpl) shutdownInstance(ctx context.Context, 
 		InstanceIds: []string{persistentNode.Instance.AwsInstanceId},
 	})
 
+	if err != nil {
+		return nil, fmt.Errorf("Failed to terminate instance: %v", err)
+	}
+
 	if len(response.TerminatingInstances) == 0 {
 		return nil, fmt.Errorf("No instances terminated")
 	}
@@ -414,7 +418,7 @@ func (usecase *PersistentNodeUseCaseImpl) shutdownInstance(ctx context.Context, 
 	terminatedInstance := response.TerminatingInstances[0]
 
 	// Update DNS
-	usecase.porkbunManager.UpdateDNS("A", *&persistentNode.ServerAlias, usecase.config.App.PublicIp)
+	usecase.cloudflareManager.UpdateDNS(*persistentNode.DnsRecordId, "A", persistentNode.ServerAlias, usecase.config.App.PublicIp)
 
 	return &terminatedInstance, err
 }

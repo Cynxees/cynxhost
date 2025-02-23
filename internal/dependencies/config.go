@@ -67,7 +67,9 @@ type Config struct {
 
 	Aws ConfigAws `mapstructure:"aws"`
 
-	Porkbun ConfigPorkbun `mapstructure:"porkbun"`
+	// Porkbun ConfigPorkbun `mapstructure:"porkbun"`
+
+	Cloudflare ConfigCloudflare `mapstructure:"cloudflare"`
 
 	Security struct {
 		JWT struct {
@@ -93,10 +95,17 @@ type ConfigAws struct {
 	} `mapstructure:"s3"`
 }
 
-type ConfigPorkbun struct {
-	ApiKey    string `mapstructure:"apiKey"`
-	SecretKey string `mapstructure:"secretKey"`
-	Domain    string `mapstructure:"domain"`
+// type ConfigPorkbun struct {
+// 	ApiKey    string `mapstructure:"apiKey"`
+// 	SecretKey string `mapstructure:"secretKey"`
+// 	Domain    string `mapstructure:"domain"`
+// }
+
+type ConfigCloudflare struct {
+	ApiToken string `mapstructure:"apiToken"`
+	Email    string `mapstructure:"email"`
+	ZoneId   string `mapstructure:"zoneId"`
+	Domain   string `mapstructure:"domain"`
 }
 
 func LoadConfig(path string) (*Config, error) {

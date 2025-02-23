@@ -1,11 +1,8 @@
 package testcontroller
 
 import (
-	"context"
 	"cynxhost/internal/dependencies"
-	"cynxhost/internal/model/response"
 	"cynxhost/internal/usecase/testusecase"
-	"net/http"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -26,31 +23,4 @@ func New(
 		validator:   validate,
 		config:      config,
 	}
-}
-
-func (c *TestController) CreateDNS(w http.ResponseWriter, r *http.Request) (context.Context, response.APIResponse) {
-	var apiResponse response.APIResponse
-
-	ctx := r.Context()
-
-	c.testUsecase.CreateDNS(&apiResponse)
-	return ctx, apiResponse
-}
-
-func (c *TestController) RetrieveDNS(w http.ResponseWriter, r *http.Request) (context.Context, response.APIResponse) {
-	var apiResponse response.APIResponse
-
-	ctx := r.Context()
-
-	c.testUsecase.RetrieveDNS(&apiResponse)
-	return ctx, apiResponse
-}
-
-func (c *TestController) UpdateDNS(w http.ResponseWriter, r *http.Request) (context.Context, response.APIResponse) {
-	var apiResponse response.APIResponse
-
-	ctx := r.Context()
-
-	c.testUsecase.UpdateDNS(&apiResponse)
-	return ctx, apiResponse
 }

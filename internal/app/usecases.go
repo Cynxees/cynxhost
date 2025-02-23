@@ -20,7 +20,7 @@ func NewUseCases(repos *Repos, dependencies *Dependencies) *UseCases {
 	return &UseCases{
 		UserUseCase:           userusecase.New(repos.TblUser, repos.JWTManager),
 		ServerTemplateUseCase: servertemplateusecase.New(repos.TblServerTemplate, repos.AwsManager),
-		PersistentNodeUseCase: persistentnodeusecase.New(repos.TblPersistentNode, repos.TblInstance, repos.TblInstanceType, repos.TblStorage, repos.TblServerTemplate, repos.AwsManager, dependencies.Logger, dependencies.Config, repos.PorkbunManager),
+		PersistentNodeUseCase: persistentnodeusecase.New(repos.TblPersistentNode, repos.TblInstance, repos.TblInstanceType, repos.TblStorage, repos.TblServerTemplate, repos.AwsManager, dependencies.Logger, dependencies.Config, repos.CloudflareManager),
 		InstanceTypeUseCase:   instancetypeusecase.New(repos.TblInstanceType),
 	}
 }

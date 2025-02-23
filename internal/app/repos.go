@@ -12,7 +12,7 @@ import (
 	"cynxhost/internal/repository/database/tblstorage"
 	"cynxhost/internal/repository/database/tbluser"
 	"cynxhost/internal/repository/externalapi/awsmanager"
-	"cynxhost/internal/repository/externalapi/porkbunmanager"
+	"cynxhost/internal/repository/externalapi/cloudflaremanager"
 )
 
 type Repos struct {
@@ -25,9 +25,10 @@ type Repos struct {
 	TblStorage        database.TblStorage
 	TblParameter      database.TblParameter
 
-	JWTManager     *dependencies.JWTManager
-	PorkbunManager *porkbunmanager.PorkbunManager
-	AwsManager     *awsmanager.AWSManager
+	JWTManager *dependencies.JWTManager
+	// PorkbunManager *porkbunmanager.PorkbunManager
+	CloudflareManager *cloudflaremanager.CloudflareManager
+	AwsManager        *awsmanager.AWSManager
 }
 
 func NewRepos(dependencies *Dependencies) *Repos {
@@ -42,8 +43,9 @@ func NewRepos(dependencies *Dependencies) *Repos {
 		TblStorage:        tblstorage.New(dependencies.DatabaseClient.Db),
 		TblParameter:      tblparameter.New(dependencies.DatabaseClient.Db),
 
-		JWTManager:     dependencies.JWTManager,
-		PorkbunManager: porkbunmanager.New(&dependencies.Config.Porkbun),
-		AwsManager:     awsmanager.NewAWSManager(&dependencies.Config.Aws),
+		JWTManager: dependencies.JWTManager,
+		// PorkbunManager: porkbunmanager.New(&dependencies.Config.Porkbun),
+		CloudflareManager: cloudflaremanager.New(&dependencies.Config.Cloudflare),
+		AwsManager:        awsmanager.NewAWSManager(&dependencies.Config.Aws),
 	}
 }

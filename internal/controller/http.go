@@ -86,11 +86,7 @@ func NewHttpServer(app *app.App) (*HttpServer, error) {
 
 	// Testing Only
 	testUsecase := testusecase.New(app.Repos, app.Dependencies)
-	testController := testcontroller.New(testUsecase, app.Dependencies.Validator, app.Dependencies.Config)
-
-	handleRouterFunc("test/create-dns", testController.CreateDNS, false)
-	handleRouterFunc("test/retrieve-dns", testController.RetrieveDNS, false)
-	handleRouterFunc("test/update-dns", testController.UpdateDNS, false)
+	_ = testcontroller.New(testUsecase, app.Dependencies.Validator, app.Dependencies.Config)
 
 	r.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
