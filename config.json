@@ -68,9 +68,10 @@
       "ttl": 3600
     }
   },
-  "porkbun": {
-    "apiKey": "${PORKBUN_API_KEY}",
-    "secretKey": "${PORKBUN_SECRET_KEY}",
-    "domain": "cynx.buzz"
+  "cloudflare": {
+    "apiToken": "${CLOUDFLARE_API_TOKEN}",
+    "email": "oesmantoderwin@gmail.com",
+    "zoneId": "${CLOUDFLARE_ZONE_ID}",
+    "domain": "cynxhost.com"
   }
 }

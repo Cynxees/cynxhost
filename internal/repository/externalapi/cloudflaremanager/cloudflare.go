@@ -28,6 +28,7 @@ func (c *CloudflareManager) CreateDNSRecord(subdomain string, ip string) (cloudf
 		Name:    subdomain,
 		Content: ip,
 		TTL:     3600,
+		Proxied: true,
 	}
 
 	// Send the POST request
@@ -62,6 +63,7 @@ func (c *CloudflareManager) UpdateDNS(recordId string, recordType string, subdom
 		Type:    recordType,
 		Name:    subdomain,
 		Comment: &subdomain,
+		Proxied: true,
 	}
 
 	// Send the PUT request

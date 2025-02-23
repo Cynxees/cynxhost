@@ -225,7 +225,9 @@ func (usecase *PersistentNodeUseCaseImpl) CreatePersistentNode(ctx context.Conte
 		},
 		NetworkInterfaces: []awstypes.InstanceNetworkInterfaceSpecification{
 			{
-				AssociatePublicIpAddress: aws.Bool(true),
+				AssociatePublicIpAddress: aws.Bool(false),
+				SubnetId:                 aws.String(param.StaticParam.ParamAwsNodeId.SubnetId),
+				Ipv6AddressCount:         aws.Int32(1),
 				DeviceIndex:              aws.Int32(0),
 				Groups: []string{
 					param.StaticParam.ParamAwsNodeId.SecurityGroupId, // Security group defined inside the network interface

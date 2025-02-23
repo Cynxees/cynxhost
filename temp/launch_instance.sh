@@ -55,7 +55,7 @@ echo "Disk setup is complete. Current directory: $(pwd)"
 # Fetch metadata
 TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
 AWS_INSTANCE_ID=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/instance-id)
-PUBLIC_IP=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/public-ipv4)
+PUBLIC_IP=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/ipv6)
 PRIVATE_IP=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/local-ipv4)
 
 # Write .env for cynxhost-agent
@@ -83,11 +83,13 @@ echo "Setting up docker"
 sudo systemctl stop docker
 sudo mv /var/lib/docker $MOUNT_DIR/docker
 
-echo "
+echo '
 {
-\"data-root\": \"$MOUNT_DIR/docker\"
+  "data-root": "'"$MOUNT_DIR"'/docker",
+  "ipv6": true,
+  "fixed-cidr-v6": "2001:db8:1::/64"
 }
-" > /etc/docker/daemon.json
+' > /etc/docker/daemon.json
 sudo systemctl daemon-reload
 sudo systemctl restart docker
 
