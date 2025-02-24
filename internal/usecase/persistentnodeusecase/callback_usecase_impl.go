@@ -10,7 +10,6 @@ import (
 	"cynxhost/internal/model/response/responsecode"
 	"cynxhost/internal/model/response/responsedata"
 	"encoding/base64"
-	"fmt"
 	"strconv"
 
 	awstypes "github.com/aws/aws-sdk-go-v2/service/ec2/types"
@@ -35,11 +34,11 @@ func (usecase *PersistentNodeUseCaseImpl) LaunchCallbackPersistentNode(ctx conte
 	instance := instances[0]
 
 	// Compare IP
-	if req.ClientIp != instance.PublicIp && req.ClientIp != instance.PrivateIp {
-		resp.Code = responsecode.CodeForbidden
-		resp.Error = fmt.Sprintf("Client IP does not match instance IP: %s", req.ClientIp)
-		return ctx
-	}
+	// if req.ClientIp != instance.PublicIp && req.ClientIp != instance.PrivateIp {
+	// 	resp.Code = responsecode.CodeForbidden
+	// 	resp.Error = fmt.Sprintf("Client IP does not match instance IP: %s", req.ClientIp)
+	// 	return ctx
+	// }
 
 	ctx, persistentNodes, err := usecase.tblPersistentNode.GetPersistentNodes(ctx, "instance_id", strconv.Itoa(instance.Id))
 	if err != nil {
@@ -77,22 +76,48 @@ func (usecase *PersistentNodeUseCaseImpl) LaunchCallbackPersistentNode(ctx conte
 	dnsRecordId := persistentNode.DnsRecordId
 
 	if dnsRecordId == nil {
-		cloudflareResp, err := usecase.cloudflareManager.CreateDNSRecord(persistentNode.ServerAlias, req.PublicIp)
-		if err != nil {
-			resp.Code = responsecode.CodeCloudflareError
-			resp.Error = "Error creating DNS: " + err.Error()
-			return ctx
+		if persistentNode.ContainIpv4 != nil && *persistentNode.ContainIpv4 {
+
+			cloudflareResp, err := usecase.cloudflareManager.CreateDNSRecord("A", persistentNode.ServerAlias, *req.PublicIp)
+			if err != nil {
+				resp.Code = responsecode.CodeCloudflareError
+				resp.Error = "Error creating DNS: " + err.Error()
+			}
+
+			newId := cloudflareResp.Result.ID
+			dnsRecordId = &newId
+
+		}else{
+
+			cloudflareResp, err := usecase.cloudflareManager.CreateDNSRecord("AAAA", persistentNode.ServerAlias, *req.PublicIpv6)
+			if err != nil {
+				resp.Code = responsecode.CodeCloudflareError
+				resp.Error = "Error creating DNS: " + err.Error()
+				return ctx
+			}
+	
+			newId := cloudflareResp.Result.ID
+			dnsRecordId = &newId
 		}
 
-		newId := cloudflareResp.Result.ID
-		dnsRecordId = &newId
 
 	} else {
-		err = usecase.cloudflareManager.UpdateDNS(*dnsRecordId, "AAAA", persistentNode.ServerAlias, req.PublicIp)
-		if err != nil {
-			resp.Code = responsecode.CodeCloudflareError
-			resp.Error = "Error updating DNS: " + err.Error()
-			return ctx
+		
+		if persistentNode.ContainIpv4 != nil && *persistentNode.ContainIpv4 {
+			err = usecase.cloudflareManager.UpdateDNS(*dnsRecordId, "A", persistentNode.ServerAlias, *req.PublicIp)
+			if err != nil {
+				resp.Code = responsecode.CodeCloudflareError
+				resp.Error = "Error updating DNS: " + err.Error()
+				return ctx
+			}
+
+		}else{
+			err = usecase.cloudflareManager.UpdateDNS(*dnsRecordId, "AAAA", persistentNode.ServerAlias, *req.PublicIpv6)
+			if err != nil {
+				resp.Code = responsecode.CodeCloudflareError
+				resp.Error = "Error updating DNS: " + err.Error()
+				return ctx
+			}
 		}
 	}
 
@@ -165,14 +190,14 @@ func (usecase *PersistentNodeUseCaseImpl) StatusCallbackPersistentNode(ctx conte
 		return ctx
 	}
 
-	instance := instances[0]
+	// instance := instances[0]
 
 	// Compare IP
-	if req.ClientIp != instance.PublicIp && req.ClientIp != instance.PrivateIp {
-		resp.Code = responsecode.CodeForbidden
-		resp.Error = fmt.Sprintf("Client IP does not match instance IP: %s", req.ClientIp)
-		return ctx
-	}
+	// if req.ClientIp != instance.PublicIp && req.ClientIp != instance.PrivateIp {
+	// 	resp.Code = responsecode.CodeForbidden
+	// 	resp.Error = fmt.Sprintf("Client IP does not match instance IP: %s", req.ClientIp)
+	// 	return ctx
+	// }
 
 	// Update persistent node
 	ctx, err = usecase.tblPersistentNode.UpdatePersistentNode(ctx, persistentNode.Id, entity.TblPersistentNode{
@@ -214,12 +239,12 @@ func (usecase *PersistentNodeUseCaseImpl) ShutdownCallbackPersistentNode(ctx con
 	}
 
 	// Check if the persistent node ip is the same
-	if persistentNode.Instance.PrivateIp != req.ClientIp && persistentNode.Instance.PublicIp != req.ClientIp {
-		resp.Code = responsecode.CodeForbidden
-		resp.Error = "You are not allowed to access this persistent node"
+	// if persistentNode.Instance.PrivateIp != req.ClientIp && persistentNode.Instance.PublicIp != req.ClientIp {
+	// 	resp.Code = responsecode.CodeForbidden
+	// 	resp.Error = "You are not allowed to access this persistent node"
 
-		return ctx
-	}
+	// 	return ctx
+	// }
 
 	// Shutdown the instance
 	terminatedInstance, err := usecase.shutdownInstance(ctx, &persistentNode)

@@ -24,10 +24,11 @@ type ServerTemplateScriptVariable struct {
 type LaunchCallbackPersistentNodeRequest struct {
 	ClientIp string `validate:"required"`
 
-	AwsInstanceId string `json:"aws_instance_id" validate:"required"`
-	PublicIp      string `json:"public_ip" validate:"required"`
-	EbsVolumeId   string `json:"ebs_volume_id" validate:"required"`
-	Type          string `json:"type" validate:"required"`
+	AwsInstanceId string  `json:"aws_instance_id" validate:"required"`
+	PublicIp      *string `json:"public_ip"`
+	PublicIpv6    *string `json:"public_ipv6"`
+	EbsVolumeId   string  `json:"ebs_volume_id" validate:"required"`
+	Type          string  `json:"type" validate:"required"`
 }
 
 type StatusCallbackPersistentNodeRequest struct {

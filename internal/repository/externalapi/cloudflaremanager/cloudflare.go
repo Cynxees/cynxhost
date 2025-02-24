@@ -19,16 +19,18 @@ func New(config *dependencies.ConfigCloudflare) *CloudflareManager {
 }
 
 // CreateDNS will create a new DNS record for the subdomain.
-func (c *CloudflareManager) CreateDNSRecord(subdomain string, ip string) (cloudflaremodel.UpsertDNSRecordResponse, error) {
+func (c *CloudflareManager) CreateDNSRecord(recordType string, subdomain string, ip string) (cloudflaremodel.UpsertDNSRecordResponse, error) {
 	url := "https://api.cloudflare.com/client/v4/zones/" + c.Config.ZoneId + "/dns_records"
+
+	proxied := false
 
 	// Create the request body
 	request := cloudflaremodel.UpsertDNSRecordRequest{
-		Type:    "AAAA",
+		Type:    recordType,
 		Name:    subdomain,
 		Content: ip,
 		TTL:     3600,
-		Proxied: true,
+		Proxied: proxied,
 	}
 
 	// Send the POST request

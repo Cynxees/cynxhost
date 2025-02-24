@@ -39,8 +39,10 @@ type TblInstance struct {
 	UpdatedDate    time.Time            `gorm:"autoUpdateTime" json:"updated_date" visibility:"1"`
 	Name           string               `gorm:"size:255;not null" json:"name" visibility:"1"`
 	AwsInstanceId  string               `gorm:"size:255;not null" json:"aws_instance_id" visibility:"10"`
-	PublicIp       string               `gorm:"size:255;not null" json:"public_ip" visibility:"2"`
+	PublicIp       *string              `gorm:"size:255;not null" json:"public_ip"`
 	PrivateIp      string               `gorm:"size:255;not null" json:"private_ip" visibility:"10"`
+	PublicIpv6     *string              `gorm:"size:255" json:"public_ipv6"`
+	PrivateIpv6    *string              `gorm:"size:255" json:"private_ipv6"`
 	InstanceTypeId int                  `gorm:"not null" json:"instance_type_id" visibility:"1"`
 	Status         types.InstanceStatus `gorm:"size:255;not null" json:"status" visibility:"1"`
 	InstanceType   TblInstanceType      `gorm:"foreignKey:InstanceTypeId" json:"instance_type" visibility:"1"`
@@ -69,6 +71,7 @@ type TblPersistentNode struct {
 	StorageId        int                        `gorm:"not null" json:"storage_id"`
 	ServerAlias      string                     `gorm:"size:255;not null" json:"server_alias"`
 	DnsRecordId      *string                    `gorm:"size:255" json:"dns_record_id" visibility:"10"`
+	ContainIpv4      *bool                      `gorm:"default:false" json:"contain_ipv4"`
 	Status           types.PersistentNodeStatus `gorm:"size:255;not null" json:"status"`
 	Owner            TblUser                    `gorm:"foreignKey:OwnerId" json:"owner"`
 	ServerTemplate   TblServerTemplate          `gorm:"foreignKey:ServerTemplateId" json:"server_template"`
